@@ -1,16 +1,5 @@
 
 
-let kernel = null;
-if(typeof gpu !== "undefined") kernel = gpu.createKernel(instrumentF).setOutput([50000]);
-
-
-
-
-
-
-
-
-
 function fractal(cfg) {
 	let mathx = (cfg[3] - cfg[2]) * this.thread.x / cfg[0] + cfg[2];
 	let mathy = cfg[5] - (cfg[5] - cfg[4]) * this.thread.y / cfg[1];
@@ -23,32 +12,32 @@ function fractal(cfg) {
 		let counterPolyR = mathx;
 		let counterPolyI = mathy;
 		for(let i = 0;i < 5;++i) {
+			counterPolyR += cfg[6 + 2 * i] * zr - cfg[6 + 2 * i + 1] * zi;
+			counterPolyI += cfg[6 + 2 * i] * zi + cfg[6 + 2 * i + 1] * zr;
+
 			let zr2 = zr * xr - zi * xi;
 			zi = zr * xi + zi * xr;
 			zr = zr2;
-			
-			counterPolyR += cfg[6 + 2 * i] * zr - cfg[6 + 2 * i + 1] * zi;
-			counterPolyI += cfg[6 + 2 * i] * zi + cfg[6 + 2 * i + 1] * zr;
 		}
 
 		zr = 1;
 		zi = 0;
-		
-		let denominatorPolyR = mathx;
-		let denominatorPolyI = mathy;
+
+		let denominatorPolyR = 0;
+		let denominatorPolyI = 0;
 		
 		for(let i = 0;i < 5;++i) {
+			denominatorPolyR += cfg[16 + 2 * i] * zr - cfg[16 + 2 * i + 1] * zi;
+			denominatorPolyI += cfg[16 + 2 * i] * zi + cfg[16 + 2 * i + 1] * zr;
+
 			let zr2 = zr * xr - zi * xi;
 			zi = zr * xi + zi * xr;
 			zr = zr2;
-			
-			denominatorPolyR += cfg[16 + 2 * i] * zr - cfg[16 + 2 * i + 1] * zi;
-			denominatorPolyI += cfg[16 + 2 * i] * zi + cfg[16 + 2 * i + 1] * zr;
 		}
-		
+
 		let z = denominatorPolyR * denominatorPolyR + denominatorPolyI * denominatorPolyI;
 		xr = (counterPolyR * denominatorPolyR + counterPolyI * denominatorPolyI) / z;
-		xi = (-counterPolyR * denominatorPolyI + counterPolyI * denominatorPolyR) / z;
+		xi = (counterPolyI * denominatorPolyR - counterPolyR * denominatorPolyI) / z;
 
 		if(xr * xr + xi * xi > 10.0) {
 			this.color(

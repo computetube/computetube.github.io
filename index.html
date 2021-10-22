@@ -94,7 +94,7 @@
 
 
     const add = gpu.createKernel(function (buffer,wave,offset,fr,channel) {
-        return buffer[this.thread.x + offset] + wave[Math.round(this.thread.x * fr * 2) + channel] / 64000;
+        return buffer[this.thread.x + offset] + wave[Math.trunc(this.thread.x / 2.0 * 4.0 * fr + channel)] / 96000;
     }).setOutput([22000]);
     
     class Instrument {
@@ -104,19 +104,17 @@
         
         render(buffer,offset,tone,sampleRate) {
     		const fr = Math.pow(2.0,tone / 12.0) * sampleRate / 44100.0;	
-
 	        const n = Math.round(Math.random() * 200);
             const channels = 2;
+            
+            console.log(tone + " / " + fr);
             
             for(var channel = 0; channel < channels; channel++) {
                 var nowBuffering = buffer.getChannelData(channel);
                 var xs = add(nowBuffering,this.wave,offset + n,fr,channel);
-                //nowBuffering.splice(offset + n,xs.legnth,xs);
-                
                 for(let i = 0;i < xs.length;++i) 
                     if(i + offset + n < nowBuffering.length)
-                        if(i * fr < this.wave.length / 2 - 10) 
-                                nowBuffering[i + offset + n] = xs[i];
+                        nowBuffering[i + offset + n] = xs[i];
 	    	}	
         }
     }
@@ -134,6 +132,46 @@
         }
     }
 
+    class Melody {
+        constructor(instrument) {
+            this.instrument = instrument;
+            this.tones = new Array(32);
+            this.index = 0;
+		    for(let i = 0;i < this.tones.length;++i) this.tones[i] = 0;		
+    		this.tones[0] = scale.length * Math.random();
+	    	this.tones[this.tones.length - 1] = scale.length * Math.random();
+    		this.fractal(0,this.tones.length - 1,0.9,scale.length * (Math.random() < 0.5 ? 1.0 : -1.0));
+		    let _min = 100000;
+		    let _max = -100000;
+		    for(let i = 0;i < this.tones.length;++i) if(this.tones[i] > _max) _max = this.tones[i];		
+		    for(let i = 0;i < this.tones.length;++i) if(this.tones[i] < _min) _min = this.tones[i];	
+		    for(let i = 0;i < this.tones.length;++i) this.tones[i] = Math.round((scale.length - 1) * (this.tones[i] - _min) / (_max - _min));
+		    console.log(this.tones);
+        }
+        
+        fractal(start,end,decay,amp) {
+		    let m = Math.round((start + end) / 2);
+		    if(this.tones[m] == 0) {
+			    this.tones[m] = (this.tones[start] + this.tones[end]) / 2.0 + Math.random() * amp;
+			    this.fractal(start,m,decay,-decay * amp);
+			    this.fractal(m,end,decay,-decay * amp);
+		    }
+	    }
+
+        play(buffer,offset,sampleRate) {
+            if(Math.random() < 0.7) {
+                this.instrument.render(buffer,offset,scale[this.tones[this.index]],sampleRate);
+                if(Math.random() < 0.7) {
+                    this.index += 1;
+                    
+                    if(this.index >= this.tones.length) {
+                        this.index = 0;
+                    }
+                }
+            }
+        }
+    }
+
     function sound() {
         makeScale();
         var channels = 2;
@@ -146,9 +184,17 @@
             ds.push(new Drum(new Instrument(drums)));
         }
         
+        let ms = [];
+        for(let i = 0;i < 2;++i) {
+            ms.push(new Melody(new Instrument(instruments)));
+        }
+        
         for(let i = 0;i < frameCount;i += Math.round(audioCtx.sampleRate / 6)) {
             ds.forEach(async (d) => {
                 d.play(myArrayBuffer,i,0,audioCtx.sampleRate);
+            });
+            ms.forEach(async (m) => {
+                m.play(myArrayBuffer,i,audioCtx.sampleRate);
             });
         }
         

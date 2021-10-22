@@ -146,7 +146,7 @@
             ds.push(new Drum(new Instrument(drums)));
         }
         
-        for(let i = 0;i < frameCount;i += Math.round(audioCtx.sampleRate / 4)) {
+        for(let i = 0;i < frameCount;i += Math.round(audioCtx.sampleRate / 6)) {
             ds.forEach(async (d) => {
                 d.play(myArrayBuffer,i,0,audioCtx.sampleRate);
             });

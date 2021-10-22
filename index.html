@@ -60,41 +60,112 @@
 
     var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
+    var scale = new Array(12);
+    
+    function makeScale() {
+	    let sc = [0,2,4,5,7,9,11];
+	    let sc0 = new Array(sc.length);
+	    
+	    for(let i = 0;i < sc.length - 1;++i) sc0[i] = sc[i + 1] - sc[i];
+	    sc0[sc.length - 1] = 12 + sc[0] - sc[sc.length - 1];
+	    let m = Math.round(Math.random() * 12);
+	    
+	    for(let i = 0;i < m;++i) {
+		    let swp = sc0[0];
+		    for(let j = 1;j < sc.length;++j) sc0[j - 1] = sc0[j];
+		    sc0[sc.length - 1] = swp;
+	    }
+	    for(let j = 1;j < sc.length;++j) sc[j] = sc0[j - 1] + sc[j - 1];
+	    
+	    console.log(sc0);
+	    
+	    let n = -Math.round(Math.random() * 4);
+	    
+	    let k = 0;
+	    for(let j = 0;j < 5;++j)
+	    for(let i = 0;i < sc.length;++i) 
+	    if(k < scale.length) {
+		    scale[k] = sc[i] + 12 * j + n - 2;
+		    k += 1;
+	    }
+	    
+	    console.log(scale);
+    }
 
-    function sound() {
-        // Stereo
-        var channels = 2;
-        // Create an empty two second stereo buffer at the
-        // sample rate of the AudioContext
-        var frameCount = audioCtx.sampleRate * 2.0;
 
-        var myArrayBuffer = audioCtx.createBuffer(channels, frameCount, audioCtx.sampleRate);
+    const add = gpu.createKernel(function (buffer,wave,offset,fr,channel) {
+        return buffer[this.thread.x + offset] + wave[Math.round(this.thread.x * fr * 2) + channel] / 64000;
+    }).setOutput([22000]);
+    
+    class Instrument {
+        constructor(arr) {
+            this.wave = arr[Math.round(Math.random() * (arr.length - 1))];
+        }
+        
+        render(buffer,offset,tone,sampleRate) {
+    		const fr = Math.pow(2.0,tone / 12.0) * sampleRate / 44100.0;	
 
-        button.onclick = function() {
-          // Fill the buffer with white noise;
-          //just random values between -1.0 and 1.0
-          for (var channel = 0; channel < channels; channel++) {
-           // This gives us the actual ArrayBuffer that contains the data
-           var nowBuffering = myArrayBuffer.getChannelData(channel);
-           for (var i = 0; i < frameCount; i++) {
-             // Math.random() is in [0; 1.0]
-             // audio needs to be in [-1.0; 1.0]
-             nowBuffering[i] = Math.random() * 2 - 1;
-           }
-          }
-
-          // Get an AudioBufferSourceNode.
-          // This is the AudioNode to use when we want to play an AudioBuffer
-          var source = audioCtx.createBufferSource();
-          // set the buffer in the AudioBufferSourceNode
-          source.buffer = myArrayBuffer;
-          // connect the AudioBufferSourceNode to the
-          // destination so we can hear the sound
-          source.connect(audioCtx.destination);
-          // start the source playing
-          source.start();
+	        const n = Math.round(Math.random() * 200);
+            const channels = 2;
+            
+            for(var channel = 0; channel < channels; channel++) {
+                var nowBuffering = buffer.getChannelData(channel);
+                var xs = add(nowBuffering,this.wave,offset + n,fr,channel);
+                //nowBuffering.splice(offset + n,xs.legnth,xs);
+                
+                for(let i = 0;i < xs.length;++i) 
+                    if(i + offset + n < nowBuffering.length)
+                        if(i * fr < this.wave.length / 2 - 10) 
+                                nowBuffering[i + offset + n] = xs[i];
+	    	}	
         }
     }
+
+
+    class Drum {
+        constructor(instrument) {
+            this.instrument = instrument;
+        }
+        
+        play(buffer,offset,tone,sampleRate) {
+            if(Math.random() < 0.4) {
+                this.instrument.render(buffer,offset,tone,sampleRate);
+            }
+        }
+    }
+
+    function sound() {
+        makeScale();
+        var channels = 2;
+        var seconds = 30;
+        var frameCount = audioCtx.sampleRate * seconds;
+        var myArrayBuffer = audioCtx.createBuffer(channels, frameCount, audioCtx.sampleRate);
+
+        let ds = [];
+        for(let i = 0;i < 3;++i) {
+            ds.push(new Drum(new Instrument(drums)));
+        }
+        
+        for(let i = 0;i < frameCount;i += Math.round(audioCtx.sampleRate / 4)) {
+            ds.forEach(async (d) => {
+                d.play(myArrayBuffer,i,0,audioCtx.sampleRate);
+            });
+        }
+        
+        // Get an AudioBufferSourceNode.
+        // This is the AudioNode to use when we want to play an AudioBuffer
+        var source = audioCtx.createBufferSource();
+        source.onended = sound;
+        // set the buffer in the AudioBufferSourceNode
+        source.buffer = myArrayBuffer;
+        // connect the AudioBufferSourceNode to the
+        // destination so we can hear the sound
+        source.connect(audioCtx.destination);
+        // start the source playing
+        source.start();
+    }
+    
+    sound();
 </script>
 </body>
 </html>

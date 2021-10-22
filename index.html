@@ -107,8 +107,6 @@
 	        const n = Math.round(Math.random() * 200);
             const channels = 2;
             
-            console.log(tone + " / " + fr);
-            
             for(var channel = 0; channel < channels; channel++) {
                 var nowBuffering = buffer.getChannelData(channel);
                 var xs = add(nowBuffering,this.wave,offset + n,fr,channel);
@@ -146,7 +144,6 @@
 		    for(let i = 0;i < this.tones.length;++i) if(this.tones[i] > _max) _max = this.tones[i];		
 		    for(let i = 0;i < this.tones.length;++i) if(this.tones[i] < _min) _min = this.tones[i];	
 		    for(let i = 0;i < this.tones.length;++i) this.tones[i] = Math.round((scale.length - 1) * (this.tones[i] - _min) / (_max - _min));
-		    console.log(this.tones);
         }
         
         fractal(start,end,decay,amp) {
@@ -210,6 +207,16 @@
         // start the source playing
         source.start();
     }
+    
+    [drums,instruments].forEach((x) => {
+        for(let j = 0;j < x.length;++j) {
+		    let _min = 100000;
+		    let _max = -100000;
+		    for(let i = 0;i < x[j].length;++i) if(x[j][i] > _max) _max = x[j][i];		
+		    for(let i = 0;i < x[j].length;++i) if(x[j][i] < _min) _min = x[j][i];	
+		    for(let i = 0;i < x[j].length;++i) x[j][i] = Math.round(10000 * (x[j][i] - _min) / (_max - _min));
+        }
+    });
     
     sound();
 </script>

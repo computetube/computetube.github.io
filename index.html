@@ -97,6 +97,7 @@
 	    for(let i = 0;i < sc.length - 1;++i) sc0[i] = sc[i + 1] - sc[i];
 	    sc0[sc.length - 1] = 12 + sc[0] - sc[sc.length - 1];
 	    let m = Math.round(Math.random() * 12);
+	    console.log(sc0);
 	    
 	    for(let i = 0;i < m;++i) {
 		    let swp = sc0[0];
@@ -146,6 +147,23 @@
     }
 
 
+    class Drum0 {
+        constructor(instrument,q,d) {
+            this.instrument = instrument;
+            this.index = 0;
+            this.q = q;
+            this.d = d;
+            console.log(q + " / " + d);
+        }
+        
+        play(buffer,offset,tone,sampleRate) {
+            if(this.index % this.q == this.d) {
+                this.instrument.render(buffer,offset,tone,sampleRate,1.2);
+            }
+            this.index += 1;
+        }
+    }
+
     class Drum {
         constructor(instrument) {
             this.instrument = instrument;
@@ -153,7 +171,7 @@
         
         play(buffer,offset,tone,sampleRate) {
             if(Math.random() < 0.4) {
-                this.instrument.render(buffer,offset,tone,sampleRate,1.6);
+                this.instrument.render(buffer,offset,tone,sampleRate,1.0);
             }
         }
     }
@@ -184,9 +202,9 @@
 	    }
 
         play(buffer,offset,sampleRate) {
-            if(Math.random() < 0.7) {
+            if(Math.random() < 0.5) {
                 this.instrument.render(buffer,offset,scale[this.tones[this.index]],sampleRate,1.0);
-                if(Math.random() < 0.7) {
+                if(Math.random() < 0.5) {
                     this.index += 1;
                     
                     if(this.index >= this.tones.length) {
@@ -197,6 +215,10 @@
         }
     }
 
+    function rand(n) {
+        return Math.trunc(Math.random() * n);
+    }
+    
     function sound() {
         makeScale();
         var channels = 2;
@@ -205,9 +227,9 @@
         var myArrayBuffer = audioCtx.createBuffer(channels, frameCount, audioCtx.sampleRate);
 
         let ds = [];
-        for(let i = 0;i < 3;++i) {
-            ds.push(new Drum(new Instrument(drums)));
-        }
+        ds.push(new Drum0(new Instrument(drums),6,0));
+        ds.push(new Drum0(new Instrument(drums),4 + rand(2),rand(2)));
+        ds.push(new Drum(new Instrument(drums)));
         
         let ms = [];
         for(let i = 0;i < 2;++i) {
@@ -215,10 +237,10 @@
         }
         
         for(let i = 0;i < frameCount;i += Math.round(audioCtx.sampleRate / 6)) {
-            ds.forEach(async (d) => {
+            ds.forEach((d) => {
                 d.play(myArrayBuffer,i,0,audioCtx.sampleRate);
             });
-            ms.forEach(async (m) => {
+            ms.forEach((m) => {
                 m.play(myArrayBuffer,i,audioCtx.sampleRate);
             });
         }
@@ -236,6 +258,7 @@
         source.start();
     }
     
+    /*
     [drums,instruments].forEach((x) => {
         for(let j = 0;j < x.length;++j) {
 		    let _min = 100000;
@@ -245,6 +268,7 @@
 		    for(let i = 0;i < x[j].length;++i) x[j][i] = Math.round(10000 * (x[j][i] - _min) / (_max - _min));
         }
     });
+    */
     
     sound();
 </script>

@@ -6,11 +6,36 @@
     <script src="drums.js"></script>
 </head>
 <body>
-    <div id="xy" style="width:100%;height:100%;">
-        <div id="ab" style="position:absolute;top:20px;left:20px;font-size:20px;color:white;">HALLO</div>
-	<img src="const.png" style="position:absolute;bottom:0;right:0">
-    </div>
-    
+	<img src="const.png" style="position:fixed;bottom:0;right:0;z-index:10">
+	<table style="width:100%;height:100%">
+		<tr>
+			<td id="xy" style="width:100%;height:100%;">
+				<div id="ab" style="position:fixed;top:20px;left:20px;font-size:20px;color:white;">HALLO</div>
+			</td>
+			<td>
+				<script>
+					var chesses = [
+						new ClassicChess(),
+						new ZauberStrikeChess(),
+						new GardenEdenChess(),
+						new HalmaChess(),
+						new GalagaChess(),
+						new MonopolyChess(),
+						new PersianRoulette()
+					];
+
+					chesses = shuffle(chesses);
+
+					chesses.forEach(function(c) {
+						document.write("<fieldset style='width:max-content;float:left'>");
+						c.write();
+						document.write("</fieldset>");
+					});
+				</script>
+			</td>
+		</tr>
+	</table>
+    <div
 <script>
     const gpu = new GPU();
     const tarot = new Tarot("Joke of the day " + new Date());

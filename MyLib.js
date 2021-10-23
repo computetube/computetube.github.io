@@ -970,6 +970,193 @@ class ClassicChess extends Chess {
 
 
 
+class PersianRoulette extends ClassicChess {
+	name() {
+		return "PersianRoulette";
+	}
+	
+	init() {
+		this.board = [];
+		for(var i = 0;i < 64;++i) this.board.push(null);
+		
+		this.board[2] = this.loadPiece("rook","rdd129","black");
+		this.board[0] = this.loadPiece("knight","ndd129","black");
+		this.board[1] = this.loadPiece("bishop","bdd129","black");
+		this.board[27] = this.loadPiece("queen","qdd129","black");
+		this.board[28] = this.loadPiece("king","kdd129","black");
+		this.board[6] = this.loadPiece("bishop","bdd129","black");
+		this.board[7] = this.loadPiece("knight","ndd129","black");
+		this.board[5] = this.loadPiece("rook","rdd129","black");
+		
+		for(var i = 0;i < 8;++i) this.board[8 + i] = this.loadPiece("pawn","pdd129","black");
+		
+		this.board[58] = this.loadPiece("rook","rld129","white");
+		this.board[56] = this.loadPiece("knight","nld129","white");
+		this.board[57] = this.loadPiece("bishop","bld129","white");
+		this.board[36] = this.loadPiece("queen","qld129","white");
+		this.board[35] = this.loadPiece("king","kld129","white");
+		this.board[62] = this.loadPiece("bishop","bld129","white");
+		this.board[63] = this.loadPiece("knight","nld129","white");
+		this.board[61] = this.loadPiece("rook","rld129","white");
+		
+		for(var i = 0;i < 8;++i) this.board[48 + i] = this.loadPiece("pawn","pld129","white");
+	}
+
+	getMoves(board,i,j) {
+		var piece = board[i + 8 * j];
+		
+		var xs = [];
+		
+		if(piece != null)
+		switch(piece.shape) {
+			case "queen":
+			case "king":
+			    return xs;
+			    break;
+			
+			case "pawn":
+				if(piece.color == "black") {
+					//if(!board[i + 8 * (j + 1)]) xs.push([i,j + 2]);
+					xs.push([i + 1,j + 1]);		
+					xs.push([i - 1,j + 1]);		
+					xs.push([i + 1,j - 1]);		
+					xs.push([i - 1,j - 1]);		
+					xs.push([i + 0,j + 1]);		
+					xs.push([i + 0,j - 1]);		
+					xs.push([i + 1,j + 0]);		
+					xs.push([i - 1,j - 0]);		
+				} else {
+					//if(!board[i + 8 * (j - 1)]) xs.push([i,j - 2]);
+					xs.push([i + 1,j + 1]);		
+					xs.push([i - 1,j + 1]);		
+					xs.push([i + 1,j - 1]);		
+					xs.push([i - 1,j - 1]);		
+					xs.push([i + 0,j + 1]);		
+					xs.push([i + 0,j - 1]);		
+					xs.push([i + 1,j + 0]);		
+					xs.push([i - 1,j - 0]);		
+				}
+			    return xs;
+				break;
+
+		    default:
+		        return super.getMoves(board,i,j);
+        }
+	}
+	
+	moveFilter(board,i,j,xs) {
+		var ys = [];
+		var piece = board[i + 8 * j];
+		
+		for(var k = 0;k < xs.length;++k) {
+			var x = xs[k];
+			
+			if(x[0] >= 0 && x[0] <= 7 && x[1] >= 0 && x[1] <= 7) {
+		        if(piece.shape != "queen" && piece.shape != "king")
+				    switch(piece.shape) {
+					    case "pawn":
+						    if(
+							    (piece.color == "white" && j > x[1]) ||
+							    (piece.color == "black" && j < x[1])
+						    ) {
+							    if(Math.abs(x[0] - i) == 1) {
+								    if(board[x[0] + 8 * x[1]] && board[x[0] + 8 * x[1]].color != piece.color)
+									    ys.push(x);
+							    } else if(!board[x[0] + 8 * x[1]]){
+								    if(piece.color == "black" && j == 1)
+									    ys.push(x);
+								    else if(piece.color == "white" && j == 6)
+									    ys.push(x);
+								    else if(Math.abs(x[1] - j) == 1)
+									    ys.push(x);
+							    }
+						    }
+						    break;
+					    case "rook":
+					    case "bishop":
+					    case "queen":
+						    var found = false;
+						    var l;
+						    for(l = 1;l < Math.max(Math.abs(i - x[0]),Math.abs(j - x[1]));++l)
+							    if(
+								    board[Math.sign(x[0] - i) * l + i + 8 * (l * Math.sign(x[1] - j) + j)]
+								    
+							    ) {
+								    found = true;
+								    break;
+							    }
+								    
+						    if(!found)
+							    if(board[x[0] + 8 * x[1]] && board[x[0] + 8 * x[1]].color != piece.color)
+								    ys.push(x);
+							    else if(!board[x[0] + 8 * x[1]])
+								    ys.push(x);
+						    break;
+					    case "knight":
+					    case "king":
+						    if(board[x[0] + 8 * x[1]] && board[x[0] + 8 * x[1]].color != piece.color)
+							    ys.push(x);
+						    else if(!board[x[0] + 8 * x[1]])
+							    ys.push(x);
+						    break;
+					    default:
+						    ys.push(x);
+				    }
+			    }
+		}
+
+        if((board[4 + 3 * 8].shape != "king") || (board[3 + 4 * 8].shape != "king")) {
+		    var ws = [];
+		    for(var k = 0;k < ys.length;++k) {
+			    var x = ys[k];
+			    
+			    if(x[0] >= 0 && x[0] <= 7 && x[1] >= 0 && x[1] <= 7) {
+			        if(x[0] == 4 && x[1] == 3) {
+			            ws.push(x);
+			        } else if(x[0] == 3 && x[1] == 4) {
+			            ws.push(x);
+			        }
+		        }
+	        }
+	        ys = ws;
+	    }
+
+		var zs = [];
+		for(var y = 0;y < ys.length;++y) { 
+			var found = false;
+			
+			for(var z = 0;z < zs.length;++z) 
+				if((ys[y][0] == zs[z][0]) && (ys[y][1] == zs[z][1]))
+					found = true;
+			
+			if(!found) zs.push(ys[y]);
+		}
+		
+		return zs;
+	}
+	
+	measureWhite(board) {
+		let cnt = 0;
+
+        if((board[4 + 3 * 8].shape != "king") || (board[3 + 4 * 8].shape != "king")) {
+            if(board[4 + 3 * 8].color == "white") {
+                return 1;
+            } else if(board[3 + 4 * 8].color == "white") {
+                return 1;
+            } else if(board[4 + 3 * 8].color == "black") {
+                return -1;
+            } else if(board[3 + 4 * 8].color == "black") {
+                return -1;
+            }
+        }
+		return cnt;
+	}
+
+}
+
+
+
+
 class ZauberStrikeChess extends ClassicChess {
 	name() {
 		return "Zauber Strike Schach";

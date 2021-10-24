@@ -132,7 +132,7 @@
     
     class Instrument {
         constructor(arr) {
-            this.wave = arr[Math.round(Math.random() * (arr.length - 1))];
+            this.wave = arr;
         }
         
         render(buffer,offset,tone,sampleRate,vol) {
@@ -230,6 +230,9 @@
         var frameCount = audioCtx.sampleRate * seconds;
         var myArrayBuffer = audioCtx.createBuffer(channels, frameCount, audioCtx.sampleRate);
 
+        var drums0 = shuffle(drums);
+        var instruments0 = shuffle(instruments);
+        
         let ds = [];
         let takt = 4 + 2 * rand(3);
         let xs = [];
@@ -239,13 +242,13 @@
                 m = rand(takt);
             } while(xs.includes(m));
             xs.push(m);
-            ds.push(new Drum0(new Instrument(drums),takt,m));
+            ds.push(new Drum0(new Instrument(drums0.shift()),takt,m));
         }
-        for(let i = 0;i < 2;++i) ds.push(new Drum(new Instrument(drums)));
+        for(let i = 0;i < 2;++i) ds.push(new Drum(new Instrument(drums0.shift())));
         
         let ms = [];
         for(let i = 0;i < 2;++i) {
-            ms.push(new Melody(new Instrument(instruments)));
+            ms.push(new Melody(new Instrument(instruments0.shift())));
         }
         
         for(let i = 0;i < frameCount;i += Math.round(audioCtx.sampleRate / 6)) {

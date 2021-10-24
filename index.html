@@ -92,22 +92,25 @@
     
     function makeScale() {
 	    let sc = [0,2,4,5,7,9,11];
-	    let sc0 = new Array(sc.length);
+	    let sc0 = [];
 	    
-	    for(let i = 0;i < sc.length - 1;++i) sc0[i] = sc[i + 1] - sc[i];
-	    sc0[sc0.length - 1] = 12 + sc[0] - sc[sc.length - 1];
+	    for(let i = 0;i < sc.length - 1;++i) sc0.push(sc[i + 1] - sc[i]);
+	    sc0.push(12 + sc[0] - sc[sc.length - 1]);
 	    let m = Math.trunc(Math.random() * sc0.length);
 	    console.log(sc0);
 	    console.log(m);
 	    
 	    for(let i = 0;i < m;++i) {
 		    let swp = sc0[0];
-		    for(let j = 1;j < sc.length;++j) sc0[j - 1] = sc0[j];
-		    sc0[sc.length - 1] = swp;
+		    for(let j = 1;j < sc0.length;++j) sc0[j - 1] = sc0[j];
+		    sc0[sc0.length - 1] = swp;
 	    }
-	    for(let j = 1;j < sc.length;++j) sc[j] = sc0[j - 1] + sc[j - 1];
+	    
+	    sc = [0];
+	    for(let j = 0;j < sc0.length - 1;++j) sc.push(sc0[j] + sc[j]);
 	    
 	    console.log(sc0);
+	    console.log(sc);
 	    
 	    let n = -Math.round(Math.random() * 4);
 	    
@@ -229,7 +232,15 @@
 
         let ds = [];
         let takt = 4 + 2 * rand(3);
-        for(let i = 0;i < 3;++i) ds.push(new Drum0(new Instrument(drums),takt,rand(takt)));
+        let xs = [];
+        for(let i = 0;i < 3;++i) {
+            let m;
+            do {
+                m = rand(takt);
+            } while(xs.includes(m));
+            xs.push(m);
+            ds.push(new Drum0(new Instrument(drums),takt,m));
+        }
         for(let i = 0;i < 2;++i) ds.push(new Drum(new Instrument(drums)));
         
         let ms = [];
@@ -271,7 +282,7 @@
     });
     */
     
-    makeScale();
+    //makeScale();
     
     sound();
 </script>

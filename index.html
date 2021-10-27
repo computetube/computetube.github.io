@@ -39,19 +39,22 @@
 		</tr>
 		<tr>
 			<td id="xy" style="width:100%;position:relative;" colspan=2>
-				<iframe src="tarot.html" style="width:100%"></iframe>
+				<iframe src="tarot.html" style="width:100%;height:400px"></iframe>
 			</td>
 		</tr>
 	</table>
 <script>
+	let w = 512;
+	let h = 256;
+	
     const gpu = new GPU();
     const tarot = new Tarot("reliable truth the day " + new Date());
-    const kernel = gpu.createKernel(fractal).setOutput([512,512]).setGraphical(true);
+    const kernel = gpu.createKernel(fractal).setOutput([w,h]).setGraphical(true);
     const cv = kernel.canvas;
     
     document.getElementById("xy").appendChild(cv);
     cv.style.width = "100%";
-    cv.style.height = "100%";
+    cv.style.height = "400px";
 
 
     let cfg = [512,512,-5,5,5,-5];

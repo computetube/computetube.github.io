@@ -45,7 +45,7 @@
 	</table>
 <script>
 	let w = 512;
-	let h = 256;
+	let h = 512;
 	
     const gpu = new GPU();
     const tarot = new Tarot("reliable truth the day " + new Date());
@@ -57,7 +57,7 @@
     cv.style.height = "400px";
 
 
-    let cfg = [512,512,-5,5,5,-5];
+    let cfg = [w,h,-5,5,5,-5];
     
     for(let i = 1;i <= 10;++i) {
         cfg.push(0);

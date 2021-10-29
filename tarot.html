@@ -405,7 +405,7 @@ class Tarot {
 }
 </script>
 
-
+<script src="gpu-browser.min.js"></script>
 
 </head>
 <body>
@@ -418,19 +418,55 @@ new google.translate.TranslateElement({pageLanguage: 'en', layout: google.transl
 }
 // ]]></script>
 <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" type="text/javascript"></script>
-    <fieldset style="width:80%;height:500px;background-color:lightgray" id="cd">
-        <legend style="font-size:x-large;background-color:yellow">Chat</legend>
-        <div style="width:100%;height:90%;overflow:auto;font-size:x-large" id="xy"></div>
-    </fieldset>
-    <input type="text" style="width:80%" id="ef" placeholder="Interpretation"><br>
-    <input type="text" style="width:80%" id="ab" placeholder="Frage"><br>
+<table style="width:100%">
+	<tr>
+		<td style="width:80%">
+			<fieldset style="width:90%;height:500px;background-color:lightgray" id="cd">
+				<legend style="font-size:x-large;background-color:yellow">Chat</legend>
+				<div style="width:100%;height:90%;overflow:auto;font-size:x-large" id="xy"></div>
+			</fieldset>
+			<input type="text" style="width:80%" id="ef" placeholder="Interpretation"><br>
+			<input type="text" style="width:80%" id="ab" placeholder="Frage"><br>
+		</td>
+		<td id="abcd">
+			<canvas style="width:100%"  id="cv" width=128 height=128></canvas>
+		</td>
+	</tr>
+</table>
+
     <!-- Start of WebFreeCounter Code -->
 <a href="https://www.webfreecounter.com/" target="_blank"><img src="https://www.webfreecounter.com/hit.php?id=gmmvpxpdn&nd=6&style=47" border="0" alt="free counter"></a>
 <!-- End of WebFreeCounter Code -->
 <script>
     document.getElementById("xy").innerHTML = new Date() + "<br>";
     
-    function key(evt) {
+ 
+    let cv = document.getElementById("cv");
+    let ctx = cv.getContext("2d");
+    console.log(cv);
+    console.log(ctx);
+    let idata = ctx.getImageData(0,0,cv.width,cv.height);
+    let idata2;
+    let m = [];
+ 
+    idata2 = [];
+    
+    for(let i = 0;i < cv.width;++i) {
+    	let xs = []
+    	for(let j = 0;j < cv.height;++j) {
+    		let ys = [];
+    		for(let k = 0;k < 4;++k) {
+    			idata.data[(i * cv.width + j) * 4 + k] =  255 * Math.random();
+    			ys.push(0);
+    		}
+    		xs.push(ys);
+    		idata.data[(i * cv.width + j) * 4 + 3] =  255;
+    	}
+    	idata2.push(xs);
+    }
+   	ctx.putImageData(idata,0,0);
+           	   
+   	function key(evt) {
         if(evt.code == "Enter") {
             document.getElementById("xy").innerHTML += "<span style='color:white'>User Interpretation -> " + document.getElementById("ef").value + "</span><br>";
             document.getElementById("xy").innerHTML += "<span style='color:green'>User -> " + document.getElementById("ab").value + "</span><br>";
@@ -441,11 +477,78 @@ new google.translate.TranslateElement({pageLanguage: 'en', layout: google.transl
             myDiv.scrollTop = myDiv.scrollHeight;
             document.getElementById("ef").focus();
             window.setTimeout(function() {void(0);},500);
+            
+            m = [];
+            for(let i = 0;i < 20;++i) {
+            	m.push([
+            		Math.round(15 * (Math.random() - 0.5)), //dx
+            		Math.round(15 * (Math.random() - 0.5)), //dy
+            		10 * (Math.random() - 0.5), //dc
+            		10 * Math.random(), //fc
+            		Math.trunc(3 * Math.random()), //ir
+            		Math.trunc(3 * Math.random()), //ig
+            		Math.trunc(3 * Math.random()), //ib
+            	]);
+            }
+            
+            idata = ctx.getImageData(0,0,cv.width,cv.height);
+            idata2 = [];
+            
+            for(let i = 0;i < cv.width;++i) {
+            	let xs = []
+            	for(let j = 0;j < cv.height;++j) {
+            		let ys = [];
+            		for(let k = 0;k < 4;++k) {
+            			idata.data[(i * cv.width + j) * 4 + k] =  255 * Math.random();
+            			ys.push(0);
+            		}
+            		xs.push(ys);
+            		idata.data[(i * cv.width + j) * 4 + 3] =  255;
+            	}
+            	idata2.push(xs);
+            }
+           	ctx.putImageData(idata,0,0);
         }
     }
+ 
+    window.setInterval(function() {
+     	let mins = [];
+    	let maxs = [];
+    	for(let i = 0;i <4;++i) {
+    		mins.push(1000000);
+    		maxs.push(-1000000);
+    	}
+
+        for(let i = 10;i < cv.width - 10;++i) {
+        	for(let j = 10;j < cv.height - 10;++j) {
+    			for(let k = 0;k < 3;++k) {
+    				let c = 0;
+    				for(let l = 0;l < m.length;++l) {
+    					c += idata.data[((i + m[l][0]) * cv.width + (j + m[l][1])) * 4 + k + m[l][4 + k]] * m[l][2] + m[l][3];
+    				}
+    				idata2[(i * cv.width + j) * 4 + k] = c;
+    				if(c < mins[k]) mins[k] = c;
+    				if(c > maxs[k]) maxs[k] = c;
+    			}
+    			idata2[(i * cv.width + j) * 4 + 3] =  255;
+			}
+		}           	
     
+        for(let i = 10;i < cv.width - 10;++i) {
+        	for(let j = 10;j < cv.height - 10;++j) {
+    			for(let k = 0;k < 3;++k) {
+       				idata.data[(i * cv.width + j) * 4 + k] = 255 * (idata2[(i * cv.width + j) * 4 + k] - mins[k]) / (maxs[k] - mins[k]);
+    			}
+    			idata.data[(i * cv.width + j) * 4 + 3] =  255;
+			}
+		}           	
+          		     	
+   		ctx.putImageData(idata,0,0);
+    },100);   
     document.getElementById("ef").focus();
     document.getElementById("ab").onkeypress = key;
+    
+   
 </script>
 </body>
 </html>

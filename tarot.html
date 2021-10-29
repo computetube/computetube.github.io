@@ -439,7 +439,7 @@ new google.translate.TranslateElement({pageLanguage: 'en', layout: google.transl
 <!-- End of WebFreeCounter Code -->
 <script>
     document.getElementById("xy").innerHTML = new Date() + "<br>";
-    
+	new Tarot(document.getElementById("xy").innerHTML);    
  
     let cv = document.getElementById("cv");
     let ctx = cv.getContext("2d");
@@ -466,6 +466,39 @@ new google.translate.TranslateElement({pageLanguage: 'en', layout: google.transl
     }
    	ctx.putImageData(idata,0,0);
            	   
+	function init() {
+		m = [];
+		for(let i = 0;i < 10;++i) {
+			m.push([
+				Math.round(15 * (Math.random() - 0.5)), //dx
+				Math.round(15 * (Math.random() - 0.5)), //dy
+				10 * (Math.random() - 0.5), //dc
+				10 * Math.random(), //fc
+				Math.trunc(3 * Math.random()), //ir
+				Math.trunc(3 * Math.random()), //ig
+				Math.trunc(3 * Math.random()), //ib
+			]);
+		}
+		
+		idata = ctx.getImageData(0,0,cv.width,cv.height);
+		idata2 = [];
+		
+		for(let i = 0;i < cv.width;++i) {
+			let xs = []
+			for(let j = 0;j < cv.height;++j) {
+				let ys = [];
+				for(let k = 0;k < 4;++k) {
+					idata.data[(i * cv.width + j) * 4 + k] =  255 * Math.random();
+					ys.push(0);
+				}
+				xs.push(ys);
+				idata.data[(i * cv.width + j) * 4 + 3] =  255;
+			}
+			idata2.push(xs);
+		}
+	   	ctx.putImageData(idata,0,0);
+	}
+	
    	function key(evt) {
         if(evt.code == "Enter") {
             document.getElementById("xy").innerHTML += "<span style='color:white'>User Interpretation -> " + document.getElementById("ef").value + "</span><br>";
@@ -477,40 +510,12 @@ new google.translate.TranslateElement({pageLanguage: 'en', layout: google.transl
             myDiv.scrollTop = myDiv.scrollHeight;
             document.getElementById("ef").focus();
             window.setTimeout(function() {void(0);},500);
-            
-            m = [];
-            for(let i = 0;i < 10;++i) {
-            	m.push([
-            		Math.round(15 * (Math.random() - 0.5)), //dx
-            		Math.round(15 * (Math.random() - 0.5)), //dy
-            		10 * (Math.random() - 0.5), //dc
-            		10 * Math.random(), //fc
-            		Math.trunc(3 * Math.random()), //ir
-            		Math.trunc(3 * Math.random()), //ig
-            		Math.trunc(3 * Math.random()), //ib
-            	]);
-            }
-            
-            idata = ctx.getImageData(0,0,cv.width,cv.height);
-            idata2 = [];
-            
-            for(let i = 0;i < cv.width;++i) {
-            	let xs = []
-            	for(let j = 0;j < cv.height;++j) {
-            		let ys = [];
-            		for(let k = 0;k < 4;++k) {
-            			idata.data[(i * cv.width + j) * 4 + k] =  255 * Math.random();
-            			ys.push(0);
-            		}
-            		xs.push(ys);
-            		idata.data[(i * cv.width + j) * 4 + 3] =  255;
-            	}
-            	idata2.push(xs);
-            }
-           	ctx.putImageData(idata,0,0);
+			init();
         }
     }
  
+ 	init();
+ 	
     window.setInterval(function() {
      	let mins = [];
     	let maxs = [];

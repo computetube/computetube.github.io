@@ -1157,9 +1157,9 @@ class Tarot {
     time() {
 	   	switch(Math.trunc(Math.random() * 3)) {
     		case 0:
-    			return ["tomorrow","today","yesterday","in the evening","in the morning","at night"].rel();
+    			return ["tomorrow","today","yesterday","in the evening","in the morning","at night"].rel() + " , ";
     		case 1:
-    			return ["after","before","on"].rel() + " " + this.attrNoun(Math.random() < 0.5) + " " + this.time();
+    			return ["after","before","on"].rel() + " " + this.attrNoun(Math.random() < 0.5) + " , " + this.time();
     		case 2:
     			return "";
     	}

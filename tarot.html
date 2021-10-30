@@ -1154,13 +1154,29 @@ class Tarot {
     	return x + " " + y + " " + this.noun2(p);
     }
     
+    attrNoun2(p) {
+    	let x = "";
+    	if(p) {
+	    	x = ["","the"].rel();
+    	} else {
+	    	x = ["a","the"].rel();
+    	}
+    	
+    	let y = "";
+    	if(Math.random() < 0.5) y = this.adjective2();
+    	
+    	return y + " " + x + " " + this.noun2(p);
+    }
+
     time() {
-	   	switch(Math.trunc(Math.random() * 3)) {
+	   	switch(Math.trunc(Math.random() * 4)) {
     		case 0:
     			return ["tomorrow","today","yesterday","in the evening","in the morning","at night"].rel() + " , ";
     		case 1:
     			return ["after","before","on"].rel() + " " + this.attrNoun(Math.random() < 0.5) + " , " + this.time();
     		case 2:
+    			return ["after","before","on"].rel() + " " + this.attrNoun2(Math.random() < 0.5) + " , " + this.time();
+    		case 3:
     			return "";
     	}
     }

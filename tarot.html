@@ -383,17 +383,13 @@ class Tarot {
     }
     
     time() {
-    	let xs = ["tomorrow","today","yesterday","in the evening","in the morning"];
-    	
-    	switch(Math.trunc(Math.random() * 4)) {
+	   	switch(Math.trunc(Math.random() * 3)) {
     		case 0:
-    			return xs.rel();
+    			return ["tomorrow","today","yesterday","in the evening","in the morning","at night"].rel();
     		case 1:
-    			return "";
+    			return ["after","before","on"].rel() + " " + this.attrNoun(Math.random() < 0.5) + " " + this.time();
     		case 2:
-    			return ["after","before"].rel() + " " + this.time();
-    		case 3:
-    			return "on the" + " " + this.adjective2() + " " + this.time();
+    			return "";
     	}
     }
     

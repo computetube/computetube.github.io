@@ -145,9 +145,23 @@
         return buffer[this.thread.x + offset] + vol * wave[Math.trunc(this.thread.x / 2.0 * 4.0 * fr + channel)] / 128000;
     }).setOutput([22000]);
     
+    gpu.addFunction(function mypow(x,y) {
+    	return Math.sign(x) * Math.pow(Math.abs(x),y);
+    });
+    
+    const add2 = gpu.createKernel(function (as,bs,xs,ys,buffer,wave,offset,fr,channel,vol) {
+    	let x = 440.0 * Math.PI * 1 * this.thread.x / 44100.0 * fr;
+    	let y = 0;
+    	for(let i = 0;i < 10;++i) y += (xs[i] * mypow(Math.sin(x),as[i]) + ys[i] * mypow(Math.cos(x),bs[i])) / (xs[i] + ys[i]);
+    		
+
+        return buffer[this.thread.x + offset] + vol * y  / 80;
+    }).setOutput([22000]);
+
     class Instrument {
-        constructor(arr) {
+        constructor(arr,add) {
             this.wave = arr;
+            this.add = add;
         }
         
         render(buffer,offset,tone,sampleRate,vol) {
@@ -157,7 +171,7 @@
             
             for(var channel = 0; channel < channels; channel++) {
                 var nowBuffering = buffer.getChannelData(channel);
-                var xs = add(nowBuffering,this.wave,offset + n,fr,channel,vol);
+                var xs = this.add(nowBuffering,this.wave,offset + n,fr,channel,vol);
                 for(let i = 0;i < xs.length;++i) 
                     if(i + offset + n < nowBuffering.length)
                         nowBuffering[i + offset + n] = xs[i];
@@ -221,9 +235,9 @@
 	    }
 
         play(buffer,offset,sampleRate) {
-            if(Math.random() < 0.5) {
+            if(Math.random() < 0.4) {
                 this.instrument.render(buffer,offset,scale[this.tones[this.index]],sampleRate,1.0);
-                if(Math.random() < 0.5) {
+                if(Math.random() < 0.4) {
                     this.index += 1;
                     
                     if(this.index >= this.tones.length) {
@@ -257,13 +271,24 @@
                 m = rand(takt);
             } while(xs.includes(m));
             xs.push(m);
-            ds.push(new Drum0(new Instrument(drums0.shift()),takt,m));
+            ds.push(new Drum0(new Instrument(drums0.shift(),add),takt,m));
         }
-        for(let i = 0;i < 2;++i) ds.push(new Drum(new Instrument(drums0.shift())));
+        for(let i = 0;i < 2;++i) ds.push(new Drum(new Instrument(drums0.shift(),add)));
         
         let ms = [];
         for(let i = 0;i < 2;++i) {
-            ms.push(new Melody(new Instrument(instruments0.shift())));
+        	let as = [];
+        	let bs = [];
+        	let xs = [];
+        	let ys = [];
+       		let f = 0.1 + 10 * Math.random();
+	       	for(let i = 0;i < 10;++i) {
+        		as.push(0.2 + 5 * Math.pow(Math.random(),f));
+        		bs.push(0.2 + 5 * Math.pow(Math.random(),f));
+        		xs.push(0.2 + 5 * Math.pow(Math.random(),f));
+        		ys.push(0.2 + 5 * Math.pow(Math.random(),f));
+        	}
+            ms.push(new Melody(new Instrument(instruments0.shift(),function(buffer,wave,offset,fr,channel,vol) {return add2(as,bs,xs,ys,buffer,wave,offset,fr,channel,vol);})));
         }
         
         for(let i = 0;i < frameCount;i += Math.round(audioCtx.sampleRate / 6)) {

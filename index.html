@@ -152,7 +152,7 @@
     const add2 = gpu.createKernel(function (as,bs,xs,ys,buffer,wave,offset,fr,channel,vol) {
     	let x = 440.0 * Math.PI * 1 * this.thread.x / 44100.0 * fr;
     	let y = 0;
-    	for(let i = 0;i < 10;++i) y += (xs[i] * mypow(Math.sin(x),as[i]) + ys[i] * mypow(Math.cos(x),bs[i])) / (xs[i] + ys[i]);
+    	for(let i = 0;i < 10;++i) y += Math.atan(xs[i] * mypow(Math.sin(x),as[i])) + Math.atan(ys[i] * mypow(Math.cos(x),bs[i]));
     		
 
         return buffer[this.thread.x + offset] + vol * y  / 80;
@@ -281,12 +281,12 @@
         	let bs = [];
         	let xs = [];
         	let ys = [];
-       		let f = 0.1 + 10 * Math.random();
+       		let f = 0.1 + 2 * Math.random();
 	       	for(let i = 0;i < 10;++i) {
-        		as.push(0.2 + 5 * Math.pow(Math.random(),f));
-        		bs.push(0.2 + 5 * Math.pow(Math.random(),f));
-        		xs.push(0.2 + 5 * Math.pow(Math.random(),f));
-        		ys.push(0.2 + 5 * Math.pow(Math.random(),f));
+        		as.push(0.1 + 2 * Math.pow(Math.random(),f));
+        		bs.push(0.1 + 2 * Math.pow(Math.random(),f));
+        		xs.push(0.1 + 2 * Math.pow(Math.random(),f));
+        		ys.push(0.1 + 2 * Math.pow(Math.random(),f));
         	}
             ms.push(new Melody(new Instrument(instruments0.shift(),function(buffer,wave,offset,fr,channel,vol) {return add2(as,bs,xs,ys,buffer,wave,offset,fr,channel,vol);})));
         }

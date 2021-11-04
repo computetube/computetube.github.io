@@ -175,7 +175,7 @@ return geometry;
 	renderer = new THREE.WebGLRenderer( { antialias: true } );
 	renderer.setPixelRatio( window.devicePixelRatio );
 	renderer.setSize( window.innerWidth, window.innerHeight );
-	document.getElementById("xyz").appendChild( enderer.domElement );
+	document.getElementById("xyz").appendChild( renderer.domElement );
 
 	stats = new Stats();
 	document.getElementById("xyz").appendChild( stats.dom );

@@ -60,7 +60,7 @@ import * as THREE from './three.module.js';
 
 import Stats from './stats.module.js';
 
-let camera, scene, renderer, stats;
+let camera, scene, renderer, stats, de;
 
 init();
 animate();
@@ -69,6 +69,7 @@ function init() {
 
 	camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
 	camera.position.y = 400;
+	
 
 	scene = new THREE.Scene();
 
@@ -175,9 +176,9 @@ return geometry;
 	renderer = new THREE.WebGLRenderer( { antialias: true } );
 	renderer.setPixelRatio( window.devicePixelRatio );
 	renderer.setSize( window.innerWidth, window.innerHeight );
-	let de = renderer.domElement;
-	de.style.width = "4ßßpx";
-	de.style.height = "4ßßpx";
+	de = renderer.domElement;
+	de.style.width = "400px";
+	de.style.height = "400px";
 	document.getElementById("xyz").appendChild( de );
 
 	stats = new Stats();
@@ -190,6 +191,8 @@ return geometry;
 }
 
 function onWindowResize() {
+	de.style.width = "400px";
+	de.style.height = "400px";
 
 	camera.aspect = window.innerWidth / window.innerHeight;
 	camera.updateProjectionMatrix();

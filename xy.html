@@ -13,55 +13,73 @@ import Stats from './stats.module.js';
 
 let camera, scene, renderer, stats, de, s;
 
-init();
-animate();
 
 
-function fractal(hmap,x0,x1,y0,y1,amp,decay) {
-	let xx = Math.round((x0 + x1) / 2);
-	let yy = Math.round((y0 + y1) / 2);
+class FractalHeightMap {
+	constructor(width,decay) {
+		this.width = width;
+		
+		let hmap = [];
+		for(let y = 0;y < width;++y) {
+			let xs = [];
+			for(let x = 0;x < width;++x) {
+				xs.push(null);
+			}
+			hmap.push(xs);
+		}
+		
+		let len = 50;
+		hmap[0][0] = len;
+		hmap[width - 1][width - 1] = len;
+		hmap[width - 1][0] = len;
+		hmap[0][width - 1] = len;
+		
+		this.fractal(hmap,0,width - 1,0,width - 1,50.0,decay);
+		
+		for(let i = 1;i < width - 1;++i) {
+			for(let j = 1;j < width - 1;++j) {
+				hmap[i][j] = null;
+			}
+		}
+		
+		for(let i = 0;i < width;++i) {
+			hmap[i][0] = hmap[i][width - 1];
+			hmap[0][i] = hmap[width - 1][i];
+		}
 
-	if(hmap[x0][yy] == null) hmap[x0][yy] = (hmap[x0][y0] + hmap[x0][y1]) / 2 + amp * Math.random();
-	if(hmap[x1][yy] == null) hmap[x1][yy] = (hmap[x1][y0] + hmap[x1][y1]) / 2 + amp * Math.random();
-	if(hmap[xx][y0] == null) hmap[xx][y0] = (hmap[x0][y0] + hmap[x1][y0]) / 2 + amp * Math.random();
-	if(hmap[xx][y1] == null) hmap[xx][y1] = (hmap[x0][y1] + hmap[x1][y1]) / 2 + amp * Math.random();
-	if(hmap[xx][yy] == null) hmap[xx][yy] = (hmap[x0][y0] + hmap[x1][y0] + hmap[x0][y1] + hmap[x1][y1]) / 4 + amp * Math.random();
+		this.fractal(hmap,0,width - 1,0,width - 1,50.0,decay);
+		
+		this.hmap = hmap;
+	}
+	
+	fractal(hmap,x0,x1,y0,y1,amp,decay) {
+		let xx = Math.round((x0 + x1) / 2);
+		let yy = Math.round((y0 + y1) / 2);
 
-	if(x0 != xx && x1 != xx && y0 != yy && y1 != yy) {
-		fractal(hmap,x0,xx,y0,yy,-amp * decay,decay);
-		fractal(hmap,xx,x1,y0,yy,-amp * decay,decay);
-		fractal(hmap,x0,xx,yy,y1,-amp * decay,decay);
-		fractal(hmap,xx,x1,yy,y1,-amp * decay,decay);
+		if(hmap[x0][yy] == null) hmap[x0][yy] = (hmap[x0][y0] + hmap[x0][y1]) / 2 + amp * Math.random();
+		if(hmap[x1][yy] == null) hmap[x1][yy] = (hmap[x1][y0] + hmap[x1][y1]) / 2 + amp * Math.random();
+		if(hmap[xx][y0] == null) hmap[xx][y0] = (hmap[x0][y0] + hmap[x1][y0]) / 2 + amp * Math.random();
+		if(hmap[xx][y1] == null) hmap[xx][y1] = (hmap[x0][y1] + hmap[x1][y1]) / 2 + amp * Math.random();
+		if(hmap[xx][yy] == null) hmap[xx][yy] = (hmap[x0][y0] + hmap[x1][y0] + hmap[x0][y1] + hmap[x1][y1]) / 4 + amp * Math.random();
+
+		if(x0 != xx && x1 != xx && y0 != yy && y1 != yy) {
+			this.fractal(hmap,x0,xx,y0,yy,-amp * decay,decay);
+			this.fractal(hmap,xx,x1,y0,yy,-amp * decay,decay);
+			this.fractal(hmap,x0,xx,yy,y1,-amp * decay,decay);
+			this.fractal(hmap,xx,x1,yy,y1,-amp * decay,decay);
+		}
+	}
+	
+	call(s,t) {
+		let i = Math.round(s * (this.width - 1));
+		let j = Math.round(t * (this.width - 1));
+		
+		return this.hmap[i][j];
 	}
 }
 
-function doener(width,decay) {
-	let hmap = [];
-	for(let y = 0;y < width;++y) {
-		let xs = [];
-		for(let x = 0;x < width;++x) {
-			xs.push(null);
-		}
-		hmap.push(xs);
-	}
-	let len = 50;
-	hmap[0][0] = len;
-	hmap[width - 1][width - 1] = len;
-	hmap[width - 1][0] = len;
-	hmap[0][width - 1] = len;
-	fractal(hmap,0,width - 1,0,width - 1,50.0,decay);
-	for(let i = 1;i < width - 1;++i) {
-		for(let j = 1;j < width - 1;++j) {
-			hmap[i][j] = null;
-		}
-	}
-	for(let i = 0;i < width;++i) {
-		hmap[i][0] = hmap[i][width - 1];
-		hmap[0][i] = hmap[width - 1][i];
-	}
 
-	fractal(hmap,0,width - 1,0,width - 1,50.0,decay);
-
+function doener(f,width,len) {
 	let xs = [];
 	let ys = [];
 	let uv = [];
@@ -69,10 +87,10 @@ function doener(width,decay) {
 		for(let j = 0;j < width;++j) {
 			let rad = Math.pow(j < width / 2 ? j / width : (width - 1 - j) / (width - 1),0.25);
 			rad = Math.pow(1 - Math.pow(j / (width - 1) * 2 - 1,2),0.1);
-			xs.push((rad * hmap[i][j] + 1.0) * Math.cos(2 * Math.PI * i / (width - 1)));
-			xs.push((rad * hmap[i][j] + 1.0) * Math.sin(2 * Math.PI * i / (width - 1)));
-			xs.push(10 * len * (j / hmap[i].length - 0.5));
-			if(i > 0) if(i < width) if(j > 0) if(j < hmap[0].length) {
+			xs.push((rad * f.call(i / (width - 1),j / (width - 1)) + 1.0) * Math.cos(2 * Math.PI * i / (width - 1)));
+			xs.push((rad * f.call(i / (width - 1),j / (width - 1)) + 1.0) * Math.sin(2 * Math.PI * i / (width - 1)));
+			xs.push(10 * len * (j / width - 0.5));
+			if(i > 0) if(i < width) if(j > 0) if(j < width) {
 				ys.push(i * width + j);
 				ys.push((i - 1) * width + j);
 				ys.push((i - 1) * width + j - 1);
@@ -94,6 +112,72 @@ function doener(width,decay) {
 }
 
 
+function humanoid(f,material) {
+	let s = new THREE.Scene();
+	let n = Math.round(25 + 15 * Math.random());
+	
+	let object = new THREE.Mesh(doener(f,n,50),material);
+	object.position.set(10,0,-10);
+	object.scale.set(0.1,0.1,0.05);
+	s.add(object);
+	
+	object = new THREE.Mesh(doener(f,n,50),material);
+	object.position.set(-10,0,-10);
+	object.scale.set(0.1,0.1,0.05);
+	s.add(object);
+	
+	object = new THREE.Mesh(doener(f,n,50),material);
+	object.position.set(10,0,-30);
+	object.scale.set(0.1,0.1,0.05);
+	s.add(object);
+	
+	object = new THREE.Mesh(doener(f,n,50),material);
+	object.position.set(-10,0,-30);
+	object.scale.set(0.1,0.1,0.05);
+	s.add(object);
+	
+	object = new THREE.Mesh(doener(f,n,50),material);
+	object.position.set(20,0,40);
+	object.scale.set(0.1,0.1,0.05);
+	object.rotation.set(0,1.5,0);
+	s.add(object);
+	
+	object = new THREE.Mesh(doener(f,n,50),material);
+	object.position.set(-20,0,40);
+	object.scale.set(0.1,0.1,0.05);
+	object.rotation.set(0,1.5,0);
+	s.add(object);
+	
+	object = new THREE.Mesh(doener(f,n,50),material);
+	object.position.set(40,0,40);
+	object.scale.set(0.1,0.1,0.05);
+	object.rotation.set(0,1.5,0);
+	s.add(object);
+	
+	object = new THREE.Mesh(doener(f,n,50),material);
+	object.position.set(-40,0,40);
+	object.scale.set(0.1,0.1,0.05);
+	object.rotation.set(0,1.5,0);
+	s.add(object);
+
+	object = new THREE.Mesh(doener(f,n,50),material);
+	object.position.set(0,0,20);
+	object.scale.set(0.2,0.2,0.1);
+	s.add(object);
+	
+	object = new THREE.Mesh(doener(f,n,50),material);
+	object.position.set(0,0,50);
+	object.scale.set(0.1,0.1,0.05);
+	s.add(object);
+	
+	return s;
+}
+
+class HeightMap2 {
+	call(s,t) {
+		return Math.sin(Math.PI * 2 * s) * Math.sin(Math.PI * 2 * t) * 25 + 25.0;
+	}
+}
 
 function init() {
 
@@ -118,67 +202,16 @@ function init() {
 
 	const material = new THREE.MeshPhongMaterial( { map: map, side: THREE.DoubleSide } );
 
-
-
-	s = new THREE.Scene();
-	let n = Math.round(25 + 15 * Math.random());
-	
-	object = new THREE.Mesh(doener(n,0.50 + 0.5 * Math.random()),material);
-	object.position.set(10,0,-10);
-	object.scale.set(0.1,0.1,0.05);
-	s.add(object);
-	
-	object = new THREE.Mesh(doener(n,0.50 + 0.5 * Math.random()),material);
-	object.position.set(-10,0,-10);
-	object.scale.set(0.1,0.1,0.05);
-	s.add(object);
-	
-	object = new THREE.Mesh(doener(n,0.50 + 0.5 * Math.random()),material);
-	object.position.set(10,0,-30);
-	object.scale.set(0.1,0.1,0.05);
-	s.add(object);
-	
-	object = new THREE.Mesh(doener(n,0.50 + 0.5 * Math.random()),material);
-	object.position.set(-10,0,-30);
-	object.scale.set(0.1,0.1,0.05);
-	s.add(object);
-	
-	object = new THREE.Mesh(doener(n,0.50 + 0.5 * Math.random()),material);
-	object.position.set(20,0,40);
-	object.scale.set(0.1,0.1,0.05);
-	object.rotation.set(0,1.5,0);
-	s.add(object);
-	
-	object = new THREE.Mesh(doener(n,0.50 + 0.5 * Math.random()),material);
-	object.position.set(-20,0,40);
-	object.scale.set(0.1,0.1,0.05);
-	object.rotation.set(0,1.5,0);
-	s.add(object);
-	
-	object = new THREE.Mesh(doener(n,0.50 + 0.5 * Math.random()),material);
-	object.position.set(40,0,40);
-	object.scale.set(0.1,0.1,0.05);
-	object.rotation.set(0,1.5,0);
-	s.add(object);
-	
-	object = new THREE.Mesh(doener(n,0.50 + 0.5 * Math.random()),material);
-	object.position.set(-40,0,40);
-	object.scale.set(0.1,0.1,0.05);
-	object.rotation.set(0,1.5,0);
-	s.add(object);
-
-	object = new THREE.Mesh(doener(n,0.50 + 0.5 * Math.random()),material);
-	object.position.set(0,0,20);
-	object.scale.set(0.2,0.2,0.1);
-	s.add(object);
-	
-	object = new THREE.Mesh(doener(n,0.50 + 0.5 * Math.random()),material);
-	object.position.set(0,0,50);
-	object.scale.set(0.1,0.1,0.05);
-	s.add(object);
-	
+	s = humanoid(new FractalHeightMap(Math.round(25 + 15 * Math.random()),0.50 + 0.5 * Math.random()),material);
 	s.scale.set(5,5,5);
-	
+	s.position.set(-200,0,0);
+	s.isScene = true;
+	scene.add(s);
+
+	s = humanoid(new HeightMap2(),material);
+	s.scale.set(5,5,5);
+	s.position.set(200,0,0);
+	s.isScene = true;
 	scene.add(s);
 	
 	renderer = new THREE.WebGLRenderer( { antialias: true } );
@@ -216,28 +249,32 @@ function animate() {
 }
 
 function render() {
+	scene.traverse( function ( object ) {
 
-	const timer = Date.now() * 0.0001;
+		if ( object.isScene === true ) {
+
+			object.rotation.x += 0.1 * Math.random();
+			object.rotation.y += 0.05 * Math.random();
+			
+		}
+
+	} );
+
+	const timer = Date.now() * 0.00001;
 
 	camera.position.x = Math.cos( timer ) * 800;
 	camera.position.z = Math.sin( timer ) * 800;
 
 	camera.lookAt( scene.position );
 
-	/*scene.traverse( function ( object ) {
-
-		if ( object.isMesh === true ) {*/
-
-			s.rotation.x = timer * 5;
-			s.rotation.y = timer * 2.5;
-
-		/*}
-
-	} );*/
 
 	renderer.render( scene, camera );
 
 }
+
+
+init();
+animate();
 
 </script>		
 

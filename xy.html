@@ -174,8 +174,12 @@ function humanoid(f,material) {
 }
 
 class HeightMap2 {
+	constructor(l) {
+		this.l = l;
+	}
+	
 	call(s,t) {
-		return Math.sin(Math.PI * 2 * s) * Math.sin(Math.PI * 2 * t) * 25 + 25.0;
+		return Math.sin(this.l * Math.PI * 2 * s) * Math.sin(this.l * Math.PI * 2 * t) * 25 + 25.0;
 	}
 }
 
@@ -203,14 +207,20 @@ function init() {
 	const material = new THREE.MeshPhongMaterial( { map: map, side: THREE.DoubleSide } );
 
 	s = humanoid(new FractalHeightMap(Math.round(25 + 15 * Math.random()),0.50 + 0.5 * Math.random()),material);
-	s.scale.set(5,5,5);
-	s.position.set(-200,0,0);
+	s.scale.set(2.5,2.5,2.5);
+	s.position.set(-100,0,0);
 	s.isScene = true;
 	scene.add(s);
 
-	s = humanoid(new HeightMap2(),material);
-	s.scale.set(5,5,5);
-	s.position.set(200,0,0);
+	s = humanoid(new HeightMap2(5),material);
+	s.scale.set(2.5,2.5,2.5);
+	s.position.set(100,0,0);
+	s.isScene = true;
+	scene.add(s);
+	
+	s = humanoid(new HeightMap2(1),material);
+	s.scale.set(2.5,2.5,2.5);
+	s.position.set(0,0,100);
 	s.isScene = true;
 	scene.add(s);
 	

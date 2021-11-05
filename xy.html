@@ -253,15 +253,15 @@ function render() {
 
 		if ( object.isScene === true ) {
 
-			object.rotation.x += 2 * Math.random() + 0.1;
-			object.rotation.y += 2 * Math.random() + 0.2;
-			object.rotation.z += 2 * Math.random() + 0.3;
+			object.rotation.x += 0.05 * Math.random() + 0.0;
+			object.rotation.y += 0.05 * Math.random() + 0.0;
+			object.rotation.z += 0.05 * Math.random() + 0.0;
 			
 		}
 
 	} );
 
-	const timer = Date.now() * 0.001;
+	const timer = Date.now() * 0.00001;
 
 	camera.position.x = Math.cos( timer ) * 800;
 	camera.position.z = Math.sin( timer ) * 800;

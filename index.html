@@ -237,7 +237,7 @@
         play(buffer,offset,sampleRate) {
             if(Math.random() < 0.4) {
                 this.instrument.render(buffer,offset,scale[this.tones[this.index]],sampleRate,1.0);
-                if(Math.random() < 0.4) {
+                if(Math.random() < 0.6) {
                     this.index += 1;
                     
                     if(this.index >= this.tones.length) {

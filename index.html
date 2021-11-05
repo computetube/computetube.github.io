@@ -275,7 +275,7 @@
         for(let i = 0;i < 2;++i) ds.push(new Drum(new Instrument(drums0.shift(),add)));
         
         let ms = [];
-        for(let i = 0;i < 2;++i) {
+        for(let i = 0;i < 1;++i) {
         	let as = [];
         	let bs = [];
         	let xs = [];
@@ -289,7 +289,7 @@
         	}
             ms.push(new Melody(new Instrument([[1,2,3],[1,2,3],[1,2,3]],function(buffer,wave,offset,fr,channel,vol) {return add2(as,bs,xs,ys,buffer,wave,offset,fr,channel,vol);})));
         }
-        for(let i = 0;i < 2;++i) {
+        for(let i = 0;i < 3;++i) {
             ms.push(new Melody(new Instrument(instruments0.shift(),add)));
 		}
         
@@ -318,6 +318,8 @@
    function mypow(x,y) {
     	return Math.sign(x) * Math.pow(Math.abs(x),y);
     } 
+	let p = 1.5 + 1 * Math.random()
+	;
     [drums,instruments].forEach((x) => {
         for(let j = 0;j < x.length;++j) {
 		    let _min = 100000;
@@ -325,7 +327,6 @@
 			let sum = 0;
 		    for(let i = 0;i < x[j].length;++i) if(x[j][i] > _max) _max = x[j][i];		
 		    for(let i = 0;i < x[j].length;++i) if(x[j][i] < _min) _min = x[j][i];	
-			let p = 2;
 		    for(let i = 0;i < x[j].length;++i) sum += Math.pow(Math.abs(x[j][i]),p);
 			sum = Math.pow(Math.abs(sum),1.0 / p);
 			sum /= x[j].length;

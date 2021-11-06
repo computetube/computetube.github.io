@@ -1,0 +1,31 @@
+<html>
+<head>
+    <script src="MyLib.js"></script>
+ </head>
+<body>
+	<img src="const.png" style="position:fixed;bottom:0;right:0;z-index:10">
+
+				<script>
+					var chesses = [
+						new ClassicChess(),
+						new ZauberStrikeChess(),
+						new GardenEdenChess(),
+						new HalmaChess(),
+						new GalagaChess(),
+						new MonopolyChess(),
+						new PersianRoulette()
+					];
+
+					chesses = shuffle(chesses);
+
+					chesses.forEach(function(c) {
+						document.write("<fieldset style='width:max-content;float:left'>");
+						c.write();
+						document.write("</fieldset>");
+					});
+				</script>
+
+
+</body>
+</html>
+

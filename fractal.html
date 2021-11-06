@@ -1,0 +1,60 @@
+<html>
+<head>
+    <script src="gpu-browser.min.js"></script>
+    <script src="MyLib.js"></script>
+    <script src="ins.js"></script>
+    <script src="drums.js"></script>
+</head>
+<body>
+	<img src="const.png" style="position:fixed;bottom:0;right:0;z-index:10">
+
+
+<script>
+	let w = 512;
+	let h = 512;
+	
+    const gpu = new GPU();
+    const tarot = new Tarot("reliable truth the day " + new Date());
+    const kernel = gpu.createKernel(fractal).setOutput([w,h]).setGraphical(true);
+    const cv = kernel.canvas;
+    
+    document.body.appendChild(cv);
+    cv.style.width = "100%";
+    cv.style.height = "100%";
+
+
+    let cfg = [w,h,-5,5,5,-5];
+    
+    for(let i = 1;i <= 10;++i) {
+        cfg.push(0);
+        cfg.push(0);
+    }
+    
+    cfg[6] = 0;
+    cfg[7] = 0;
+    cfg[8] = 0;
+    cfg[9] = 0;
+    cfg[10] = 1;
+    cfg[11] = 0;
+    
+    cfg[16] = 1;
+    cfg[17] = 0;
+    
+    kernel(cfg);
+    
+    window.setInterval(() => {
+        for(let i = 1;i <= 5;++i) {
+            cfg[6 + 2 * i] += 0.002 * i * (Math.random() - 0.5);
+            cfg[6 + 2 * i + 1] += 0.002 * i * (Math.random() - 0.5);
+        }
+        kernel(cfg);
+    },10);
+        
+
+</script>
+
+
+
+</body>
+</html>
+

@@ -1,0 +1,157 @@
+<html>
+<head>
+    <script src="gpu-browser.min.js"></script>
+    <script src="drums.js"></script>
+</head>
+<body>
+	<img src="const.png" style="position:fixed;bottom:0;right:0;z-index:10">
+
+
+<script>
+	
+function shuffle(xs) {
+xs = xs.slice(0);
+
+	var ys = [];
+	
+	while(xs.length > 0) {
+		var i = Math.round(Math.random() * (xs.length - 1));
+		ys.push(xs[i]);
+		xs.splice(i,1);
+	}
+	
+	return ys;
+}
+
+    const gpu = new GPU();
+
+    var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    const add = gpu.createKernel(function (buffer,wave,offset,fr,channel,vol) {
+        return buffer[this.thread.x + offset] + vol * wave[Math.trunc(this.thread.x / 2.0 * 4.0 * fr + channel)] / 100000;
+    }).setOutput([22000]);
+    
+    class Instrument {
+        constructor(arr,add) {
+            this.wave = arr;
+            this.add = add;
+        }
+        
+        render(buffer,offset,tone,sampleRate,vol) {
+    		const fr = Math.pow(2.0,tone / 12.0) * sampleRate / 44100.0;	
+	        const n = Math.round(Math.random() * 50);
+            const channels = 2;
+            
+            for(var channel = 0; channel < channels; channel++) {
+                var nowBuffering = buffer.getChannelData(channel);
+                var xs = this.add(nowBuffering,this.wave,offset + n,fr,channel,vol);
+                for(let i = 0;i < xs.length;++i) 
+                    if(i + offset + n < nowBuffering.length)
+                        nowBuffering[i + offset + n] = xs[i];
+	    	}	
+        }
+    }
+
+
+    class Drum0 {
+        constructor(instrument,q,d) {
+            this.instrument = instrument;
+            this.index = 0;
+            this.q = q;
+            this.d = d;
+            console.log(q + " / " + d);
+        }
+        
+        play(buffer,offset,tone,sampleRate) {
+            if(this.index % this.q == this.d) {
+                this.instrument.render(buffer,offset,tone,sampleRate,1.2);
+            }
+            this.index += 1;
+        }
+    }
+
+    class Drum {
+        constructor(instrument) {
+            this.instrument = instrument;
+        }
+        
+        play(buffer,offset,tone,sampleRate) {
+            if(Math.random() < 0.4) {
+                this.instrument.render(buffer,offset,tone,sampleRate,1.0);
+            }
+        }
+    }
+
+    function rand(n) {
+        return Math.round(100000 * Math.random()) % n;
+    }
+    
+    function sound() {
+        var channels = 2;
+        var seconds = 60;
+        var frameCount = audioCtx.sampleRate * seconds;
+        var myArrayBuffer = audioCtx.createBuffer(channels, frameCount, audioCtx.sampleRate);
+
+        var drums0 = shuffle(drums);
+        
+        let ds = [];
+        let takt = 4 + 2 * rand(3);
+        let xs = [];
+        for(let i = 0;i < 3;++i) {
+            let m;
+            do {
+                m = rand(takt);
+            } while(xs.includes(m));
+            xs.push(m);
+            ds.push(new Drum0(new Instrument(drums0.shift(),add),takt,m));
+        }
+        for(let i = 0;i < 2;++i) ds.push(new Drum(new Instrument(drums0.shift(),add)));
+        
+        for(let i = 0;i < frameCount;i += Math.round(audioCtx.sampleRate / 6)) {
+            ds.forEach((d) => {
+                d.play(myArrayBuffer,i,0,audioCtx.sampleRate);
+            });
+        }
+        
+        // Get an AudioBufferSourceNode.
+        // This is the AudioNode to use when we want to play an AudioBuffer
+        var source = audioCtx.createBufferSource();
+        source.onended = sound;
+        // set the buffer in the AudioBufferSourceNode
+        source.buffer = myArrayBuffer;
+        // connect the AudioBufferSourceNode to the
+        // destination so we can hear the sound
+        source.connect(audioCtx.destination);
+        // start the source playing
+        source.start();
+    }
+    
+   function mypow(x,y) {
+    	return Math.sign(x) * Math.pow(Math.abs(x),y);
+    } 
+	let p = 1.9 + 0.2 * Math.random()
+	;
+    [drums].forEach((x) => {
+        for(let j = 0;j < x.length;++j) {
+		    let _min = 100000;
+		    let _max = -100000;
+			let sum = 0;
+		    for(let i = 0;i < x[j].length;++i) if(x[j][i] > _max) _max = x[j][i];		
+		    for(let i = 0;i < x[j].length;++i) if(x[j][i] < _min) _min = x[j][i];	
+		    for(let i = 0;i < x[j].length;++i) sum += Math.pow(Math.abs(x[j][i]),p);
+			sum = Math.pow(Math.abs(sum),1.0 / p);
+			sum /= x[j].length;
+		    for(let i = 0;i < x[j].length;++i) x[j][i] = Math.round(10 * x[j][i] / sum);
+        }
+    });
+    
+    //makeScale();
+    
+    sound();
+</script>
+
+
+
+</body>
+</html>
+

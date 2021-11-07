@@ -257,7 +257,7 @@ class ChessBoard extends Board {
 		
 		if(typeof document !== "undefined") y = document.createElement("img");
 		y.src1 = "img/" + imgName + ".png";
-		y.src2 = "img/back01.gif";
+		y.src2 = "img/back02.jpg";
 		y.src = y.src2;
 		y.shape = name;
 		y.color = color;
@@ -277,7 +277,7 @@ class DiceSet extends Board {
 		for(let i = 1;i <= 16;++i) {
 			let y = document.createElement("img");
 			y.src1 = "img/Alea_" + Math.trunc(6 * Math.random() + 1) + ".png";
-			y.src2 = "img/back01.gif";
+			y.src2 = "img/back03.png";
 			y.src = y.src2;
 			y.index = i;
 			y.onload = this.render.bind(this);

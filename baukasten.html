@@ -1,0 +1,164 @@
+<html>
+
+
+<body>
+<script>
+class Board {
+	render() {
+		var cv = this.domElement;
+		var ctx = cv.getContext("2d");
+		
+		ctx.fillStyle = "black";
+		ctx.fillRect(0,0,cv.width,cv.height);
+		
+		var c = 0;
+		for(var i = 0;i < this.w;++i) {
+			for(var j = 0;j < this.h;++j) {
+				ctx.fillStyle = c ? "lightgray" : "white";
+				ctx.fillRect(i * cv.width / this.w,j * cv.height / this.h,cv.width / this.w,cv.height / this.h);
+				c = 1 - c;
+			}
+			c = 1 - c;
+		}
+		
+		for(var i = 0;i < this.w;++i) {
+			for(var j = 0;j < this.h;++j) {
+				if(this.board[i + this.w * j] != null) {
+					ctx.drawImage(this.board[i + this.w * j],i * cv.width / this.w,j * cv.height / this.h,cv.width / this.w,cv.height / this.h);
+				}
+			}
+		}
+	}
+}
+
+class ChessBoard extends Board { 
+	constructor() {
+		super();
+		
+		this.w = this.h = 8;
+	
+		this.board = [];
+		for(var i = 0;i < 64;++i) this.board.push(null);
+		
+		this.board[0] = this.loadPiece("rook","rdd129","black");
+		this.board[1] = this.loadPiece("knight","ndd129","black");
+		this.board[2] = this.loadPiece("bishop","bdd129","black");
+		this.board[3] = this.loadPiece("queen","qdd129","black");
+		this.board[4] = this.loadPiece("king","kdd129","black");
+		this.board[5] = this.loadPiece("bishop","bdd129","black");
+		this.board[6] = this.loadPiece("knight","ndd129","black");
+		this.board[7] = this.loadPiece("rook","rdd129","black");
+		
+		for(var i = 0;i < 8;++i) this.board[8 + i] = this.loadPiece("pawn","pdd129","black");
+		
+		this.board[56] = this.loadPiece("rook","rld129","white");
+		this.board[57] = this.loadPiece("knight","nld129","white");
+		this.board[58] = this.loadPiece("bishop","bld129","white");
+		this.board[59] = this.loadPiece("queen","qld129","white");
+		this.board[60] = this.loadPiece("king","kld129","white");
+		this.board[61] = this.loadPiece("bishop","bld129","white");
+		this.board[62] = this.loadPiece("knight","nld129","white");
+		this.board[63] = this.loadPiece("rook","rld129","white");
+		
+		for(var i = 0;i < 8;++i) this.board[48 + i] = this.loadPiece("pawn","pld129","white");
+		
+		this.domElement = document.createElement("canvas");
+		this.domElement.width = 1000;
+		this.domElement.height = 1000;
+	}
+	
+	loadPiece(name,imgName,color) {
+		var y = {};
+		
+		if(typeof document !== "undefined") y = document.createElement("img");
+		y.src = "img/" + imgName + ".png";
+		y.shape = name;
+		y.color = color;
+		y.onload = this.render.bind(this);
+		
+		return y;
+	}
+}
+
+class DiceSet extends Board {
+	constructor() {
+		super();
+		
+		this.w = this.h = 4;
+	
+		this.faces = [];
+		for(let i = 1;i <= 6;++i) {
+			let y = document.createElement("img");
+			y.src = "img/Alea_" + i + ".png";
+			y.index = i;
+			y.onload = this.render.bind(this);
+			this.faces.push(y);
+		}
+		
+		this.board = [];
+		for(let i = 0;i < 16;++i) this.board.push(this.faces[Math.trunc(6 * Math.random())]);
+		
+		this.domElement = document.createElement("canvas");
+		this.domElement.width = 1000;
+		this.domElement.height = 1000;
+	}
+}
+
+function shuffle(xs) {
+	var ys = [];
+	
+	while(xs.length > 0) {
+		var i = Math.round(Math.random() * (xs.length - 1));
+		ys.push(xs[i]);
+		xs.splice(i,1);
+	}
+	
+	return ys;
+}
+
+class CardSet extends Board {
+	constructor() {
+		super();
+		
+		this.w = this.h = 8;
+	
+		let xs = ["c","d","h","s"];
+		this.board = [];
+		
+		xs.forEach((c) => {
+			for(let i = 1;i <= 13;++i) {
+				let y = document.createElement("img");
+				y.src = "img/" + (i <= 9 ? "0" : "") + i + c + ".gif";
+				y.color = c;
+				y.index = i;
+				y.onload = this.render.bind(this);
+				this.board.push(y);
+			}
+		});
+		
+		this.board = shuffle(this.board);
+		this.domElement = document.createElement("canvas");
+		this.domElement.width = 1000;
+		this.domElement.height = 1000;
+	}
+}
+
+let cb = new ChessBoard();
+document.body.appendChild(cb.domElement);
+cb.domElement.style.width = "30%";
+cb.domElement.style.float = "left";
+
+let cs = new CardSet();
+document.body.appendChild(cs.domElement);
+cs.domElement.style.width = "30%";
+cs.domElement.style.float = "left";
+
+let ds = new DiceSet();
+document.body.appendChild(ds.domElement);
+ds.domElement.style.width = "30%";
+ds.domElement.style.float = "left";
+</script>
+</body>
+</html>
+
+

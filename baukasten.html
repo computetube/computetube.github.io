@@ -34,7 +34,7 @@ function xMouseMove(evt) {
 			b.mousex = -1;
 		} 
 
-		if(b.mousex >= 0) {
+		if(b.mousex >= 0 && b.mousey >= 0) {
 		if(evt.target == b.domElement) {
 			x.style.left = b.domElement.offsetWidth * b.mousex / b.w + b.domElement.offsetLeft;
 			x.style.top = b.domElement.offsetHeight * b.mousey / b.h + b.domElement.offsetTop;
@@ -46,7 +46,7 @@ function xMouseMove(evt) {
 
 function xClick(evt) {
 	boards.forEach((b) => {
-		if(b.mousex >= 0) {
+		if(b.mousex >= 0 && b.mousey >= 0 && b.mousex < b.w && b.mousey < b.h) {
 			let y = b.board[b.mousex + b.w * b.mousey];
 			if(y != null) {
 				var xy = getOffset(x);
@@ -94,6 +94,8 @@ class Board {
 		this.domElement = document.createElement("canvas");
 		this.domElement.width = 1000;
 		this.domElement.height = 1000;
+		this.domElement.style.borderWidth = "10px";
+		this.domElement.style.borderStyle = "outset";
 
 		this.domElement.addEventListener("mouseout",((evt) => {
 			this.mousex = -1;
@@ -111,7 +113,8 @@ class Board {
 			this.mousex = Math.floor((evt.x - xy.left) * this.w / cv.offsetWidth);
 			this.mousey = Math.floor((evt.y - xy.top) * this.h / cv.offsetHeight);
 
-			if(this.mousex > this.w - 1) this.mousex = this.w - 1;
+			if(this.mousex > this.w - 1) this.mousex = - 1;
+			if(this.mousey > this.h - 1) this.mousey = - 1;
 					
 			if(!this.board[this.mousex + this.w * this.mousey]) { // || (this.board[this.mousex + this.w * this.mousey].color != this.board.color && !this.team())) {
 				this.mousex = -1;
@@ -150,7 +153,7 @@ class Board {
 			}
 		}
 
-		if(this.mousex >= 0) {
+		if(this.mousex >= 0 && this.mousey >= 0) {
 			ctx.strokeStyle = "green"
 			ctx.lineWidth = 100 / this.w * cv.width / cv.offsetWidth;
 			
@@ -160,6 +163,24 @@ class Board {
 		}
 	}
 }
+
+class EmptyBoard extends Board { 
+	constructor() {
+		super();
+		
+		this.w = 10;
+		this.h = 4;
+
+		this.domElement.width = this.w * 100;
+		this.domElement.height = this.h * 100;
+		
+		this.board = [];
+		for(var i = 0;i < this.w * this.h;++i) this.board.push(null);
+		
+		this.render();
+	}
+}
+
 
 class ChessBoard extends Board { 
 	constructor() {
@@ -261,18 +282,23 @@ class CardSet extends Board {
 
 let cb = new ChessBoard();
 document.body.appendChild(cb.domElement);
-cb.domElement.style.width = "30%";
+cb.domElement.style.width = "20%";
 cb.domElement.style.float = "left";
 
 let cs = new CardSet();
 document.body.appendChild(cs.domElement);
-cs.domElement.style.width = "30%";
+cs.domElement.style.width = "20%";
 cs.domElement.style.float = "left";
 
 let ds = new DiceSet();
 document.body.appendChild(ds.domElement);
-ds.domElement.style.width = "30%";
+ds.domElement.style.width = "20%";
 ds.domElement.style.float = "left";
+
+let eb = new EmptyBoard();
+document.body.appendChild(eb.domElement);
+eb.domElement.style.height = "30%";
+eb.domElement.style.float = "left";
 </script>
 </body>
 </html>

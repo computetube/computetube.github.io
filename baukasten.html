@@ -3,6 +3,8 @@
 
 <body>
 <script>
+let boards = [];
+
 class Board {
 	constructor() {
 		this.domElement = document.createElement("canvas");
@@ -15,10 +17,50 @@ class Board {
 			this.render();
 		}).bind(this));
 		
+		this.domElement.addEventListener("click",((evt) => {
+				let x = this.board[this.mousex + this.w * this.mousey];
+				this.board[this.mousex + this.w * this.mousey] = null;
+				this.render();
+				document.body.appendChild(x);
+				
+				var cv = this.domElement;
+				var xy = this.getOffset(cv);
+				
+				x.style.position = "absolute";
+				x.style.zIndex = "10";	
+				x.style.top = evt.offsetY + xy.top - Math.round(x.offsetHeight / 2);
+				x.style.left = evt.offsetX + xy.left - Math.round(x.offsetWidth / 2);
+				
+				x.addEventListener("mousemove",((evt) => {
+					let xy = this.getOffset(x);
+					x.style.top = evt.offsetY + xy.top - Math.round(x.offsetHeight / 2);
+					x.style.left = evt.offsetX + xy.left - Math.round(x.offsetWidth / 2);
+					boards.forEach((b) => {
+						var xy = this.getOffset(b);
+						var xy2 = this.getOffset(x);
+						
+						b.mousex = Math.floor((evt.x + xy2.left - xy.left - x.offsetLeft - b.domElement.offsetLeft) * b.w / b.domElement.offsetWidth);
+						b.mousey = Math.floor((evt.y + xy2.top - xy.top - x.offsetTop - b.domElement.offsetTop) * b.h / b.domElement.offsetHeight);
+
+						console.log(b.mousex + " / " + b.mousey);
+						if(b.mousex > b.w - 1) {
+							b.mousex = -1;
+						} 
+						b.render();
+					});
+				}));
+				x.addEventListener("click",((evt) => {
+					boards.forEach((b) => {
+						if(b.mousex > 0) {
+							b.board[b.mousex + b.w * b.mousey] = x;
+							document.body.removeChild(x);
+						} 
+						b.render();
+					});
+				}));
+		}).bind(this));
+		
 		this.domElement.addEventListener("mousemove",((evt) => {
-			/*if(this.thinking) return;
-			if(onMove) return;
-			if(isMouseDown) return;*/
 			var cv = this.domElement;
 			var xy = this.getOffset(cv);
 			
@@ -34,6 +76,8 @@ class Board {
 			
 			this.render();
 		}).bind(this));
+		
+		boards.push(this);
 	}
 
 	render() {
@@ -46,7 +90,7 @@ class Board {
 		var c = 0;
 		for(var i = 0;i < this.w;++i) {
 			for(var j = 0;j < this.h;++j) {
-				ctx.fillStyle = c ? "lightgray" : "white";
+				ctx.fillStyle = c ? "darkgray" : "lightgray";
 				ctx.fillRect(i * cv.width / this.w,j * cv.height / this.h,cv.width / this.w,cv.height / this.h);
 				c = 1 - c;
 			}
@@ -63,7 +107,7 @@ class Board {
 
 		if(this.mousex >= 0) {
 			ctx.strokeStyle = "green"
-			ctx.lineWidth = 10 * cv.width / cv.offsetWidth;
+			ctx.lineWidth = 100 / this.w * cv.width / cv.offsetWidth;
 			
 			ctx.beginPath();
 			ctx.rect(this.mousex * cv.width / this.w,this.mousey * cv.height / this.h,cv.width / this.w,cv.height / this.h);
@@ -133,18 +177,15 @@ class DiceSet extends Board {
 		super();
 		
 		this.w = this.h = 4;
-	
-		this.faces = [];
-		for(let i = 1;i <= 6;++i) {
+		this.board = [];
+		
+		for(let i = 1;i <= 16;++i) {
 			let y = document.createElement("img");
-			y.src = "img/Alea_" + i + ".png";
+			y.src = "img/Alea_" + Math.trunc(6 * Math.random() + 1) + ".png";
 			y.index = i;
 			y.onload = this.render.bind(this);
-			this.faces.push(y);
+			this.board.push(y);
 		}
-		
-		this.board = [];
-		for(let i = 0;i < 16;++i) this.board.push(this.faces[Math.trunc(6 * Math.random())]);
 	}
 }
 

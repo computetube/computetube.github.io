@@ -4,8 +4,92 @@
 <body>
 <script>
 let boards = [];
+let x = null;
 
-class Board {
+function getOffset( el ) {
+	var _x = 0;
+	var _y = 0;
+	while( el && !isNaN( el.offsetLeft ) && !isNaN( el.offsetTop ) ) {
+	_x += el.offsetLeft - el.scrollLeft;
+	_y += el.offsetTop - el.scrollTop;
+	el = el.offsetParent;
+	}
+	return { top: _y, left: _x };
+}
+	
+function xMouseMove(evt) {
+	if(x == null) return;
+	let xyz = getOffset(x);
+	x.style.top = evt.offsetY + xyz.top - Math.round(x.offsetHeight / 2);
+	x.style.left = evt.offsetX + xyz.left - Math.round(x.offsetWidth / 2);
+
+	boards.forEach((b) => {
+		var xy = getOffset(b);
+		var xy2 = getOffset(x);
+		
+		b.mousex = Math.floor((evt.x + xy2.left - xy.left - x.offsetLeft - b.domElement.offsetLeft) * b.w / b.domElement.offsetWidth);
+		b.mousey = Math.floor((evt.y + xy2.top - xy.top - x.offsetTop - b.domElement.offsetTop) * b.h / b.domElement.offsetHeight);
+
+		if(b.mousex > b.w - 1) {
+			b.mousex = -1;
+		} 
+
+		if(b.mousex >= 0) {
+		if(evt.target == b.domElement) {
+			x.style.left = b.domElement.offsetWidth * b.mousex / b.w + b.domElement.offsetLeft;
+			x.style.top = b.domElement.offsetHeight * b.mousey / b.h + b.domElement.offsetTop;
+		}
+		}
+		b.render();
+	});
+}
+
+function xClick(evt) {
+	boards.forEach((b) => {
+		if(b.mousex >= 0) {
+			let y = b.board[b.mousex + b.w * b.mousey];
+			if(y != null) {
+				var xy = getOffset(x);
+				
+				b.board[b.mousex + b.w * b.mousey] = null;
+				document.body.appendChild(y);
+
+				y.style.position = "absolute";
+				y.style.zIndex = "10";	
+				y.style.top = evt.offsetY + xy.top - Math.round(y.offsetHeight / 2);
+				y.style.left = evt.offsetX + xy.left - Math.round(y.offsetWidth / 2);
+				
+				y.addEventListener("mousemove",xMouseMove);
+				y.addEventListener("mousedown",xClick);
+			}
+			b.board[b.mousex + b.w * b.mousey] = x;
+			document.body.removeChild(x);
+			x = y;
+		} 
+		b.render();
+		
+	});
+}
+
+class Board {	
+	domElementClick(evt) {
+		x = this.board[this.mousex + this.w * this.mousey];
+		this.board[this.mousex + this.w * this.mousey] = null;
+		this.render();
+		document.body.appendChild(x);
+		
+		var cv = this.domElement;
+		var xy = getOffset(cv);
+		
+		x.style.position = "absolute";
+		x.style.zIndex = "10";	
+		x.style.top = evt.offsetY + xy.top - Math.round(x.offsetHeight / 2);
+		x.style.left = evt.offsetX + xy.left - Math.round(x.offsetWidth / 2);
+		
+		x.addEventListener("mousemove",xMouseMove);
+		x.addEventListener("click",xClick);
+	}
+	
 	constructor() {
 		this.domElement = document.createElement("canvas");
 		this.domElement.width = 1000;
@@ -17,52 +101,12 @@ class Board {
 			this.render();
 		}).bind(this));
 		
-		this.domElement.addEventListener("click",((evt) => {
-				let x = this.board[this.mousex + this.w * this.mousey];
-				this.board[this.mousex + this.w * this.mousey] = null;
-				this.render();
-				document.body.appendChild(x);
-				
-				var cv = this.domElement;
-				var xy = this.getOffset(cv);
-				
-				x.style.position = "absolute";
-				x.style.zIndex = "10";	
-				x.style.top = evt.offsetY + xy.top - Math.round(x.offsetHeight / 2);
-				x.style.left = evt.offsetX + xy.left - Math.round(x.offsetWidth / 2);
-				
-				x.addEventListener("mousemove",((evt) => {
-					let xy = this.getOffset(x);
-					x.style.top = evt.offsetY + xy.top - Math.round(x.offsetHeight / 2);
-					x.style.left = evt.offsetX + xy.left - Math.round(x.offsetWidth / 2);
-					boards.forEach((b) => {
-						var xy = this.getOffset(b);
-						var xy2 = this.getOffset(x);
-						
-						b.mousex = Math.floor((evt.x + xy2.left - xy.left - x.offsetLeft - b.domElement.offsetLeft) * b.w / b.domElement.offsetWidth);
-						b.mousey = Math.floor((evt.y + xy2.top - xy.top - x.offsetTop - b.domElement.offsetTop) * b.h / b.domElement.offsetHeight);
-
-						console.log(b.mousex + " / " + b.mousey);
-						if(b.mousex > b.w - 1) {
-							b.mousex = -1;
-						} 
-						b.render();
-					});
-				}));
-				x.addEventListener("click",((evt) => {
-					boards.forEach((b) => {
-						if(b.mousex > 0) {
-							b.board[b.mousex + b.w * b.mousey] = x;
-							document.body.removeChild(x);
-						} 
-						b.render();
-					});
-				}));
-		}).bind(this));
+		this.domElement.addEventListener("click",this.domElementClick.bind(this));
+		this.domElement.addEventListener("mousemove",xMouseMove);
 		
 		this.domElement.addEventListener("mousemove",((evt) => {
 			var cv = this.domElement;
-			var xy = this.getOffset(cv);
+			var xy = getOffset(cv);
 			
 			this.mousex = Math.floor((evt.x - xy.left) * this.w / cv.offsetWidth);
 			this.mousey = Math.floor((evt.y - xy.top) * this.h / cv.offsetHeight);
@@ -76,6 +120,7 @@ class Board {
 			
 			this.render();
 		}).bind(this));
+		this.domElement.addEventListener("mousemove",xMouseMove);
 		
 		boards.push(this);
 	}
@@ -113,17 +158,6 @@ class Board {
 			ctx.rect(this.mousex * cv.width / this.w,this.mousey * cv.height / this.h,cv.width / this.w,cv.height / this.h);
 			ctx.stroke();
 		}
-	}
-	
-	getOffset( el ) {
-		var _x = 0;
-		var _y = 0;
-		while( el && !isNaN( el.offsetLeft ) && !isNaN( el.offsetTop ) ) {
-		_x += el.offsetLeft - el.scrollLeft;
-		_y += el.offsetTop - el.scrollTop;
-		el = el.offsetParent;
-		}
-		return { top: _y, left: _x };
 	}
 }
 

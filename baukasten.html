@@ -24,7 +24,7 @@ function xMouseMove(evt) {
 	x.style.left = evt.offsetX + xyz.left - Math.round(x.offsetWidth / 2);
 
 	boards.forEach((b) => {
-		var xy = getOffset(b);
+		var xy = getOffset(b.domElement);
 		var xy2 = getOffset(x);
 		
 		b.mousex = Math.floor((evt.x + xy2.left - xy.left - x.offsetLeft - b.domElement.offsetLeft) * b.w / b.domElement.offsetWidth);
@@ -35,10 +35,10 @@ function xMouseMove(evt) {
 		} 
 
 		if(b.mousex >= 0 && b.mousey >= 0) {
-		if(evt.target == b.domElement) {
-			x.style.left = b.domElement.offsetWidth * b.mousex / b.w + b.domElement.offsetLeft;
-			x.style.top = b.domElement.offsetHeight * b.mousey / b.h + b.domElement.offsetTop;
-		}
+			if(evt.target == b.domElement) {
+				x.style.left = Math.round(b.domElement.offsetWidth * b.mousex / b.w - (xy2.left - xy.left - x.offsetLeft - b.domElement.offsetLeft));
+				x.style.top = Math.round(b.domElement.offsetHeight * b.mousey / b.h - (xy2.top - xy.top - x.offsetTop - b.domElement.offsetTop));
+			}
 		}
 		b.render();
 	});
@@ -74,6 +74,7 @@ function xClick(evt) {
 class Board {	
 	domElementClick(evt) {
 		x = this.board[this.mousex + this.w * this.mousey];
+		x.src = x.src1;
 		this.board[this.mousex + this.w * this.mousey] = null;
 		this.render();
 		document.body.appendChild(x);
@@ -91,12 +92,32 @@ class Board {
 	}
 	
 	constructor() {
+		this.domDiv = document.createElement("div");
+		this.domDiv.style.position = "relative";
+
 		this.domElement = document.createElement("canvas");
 		this.domElement.width = 1000;
 		this.domElement.height = 1000;
 		this.domElement.style.borderWidth = "10px";
 		this.domElement.style.borderStyle = "outset";
+		this.domElement.style.width = "95%";
 
+		this.domButtonUpElement = document.createElement("button");
+		this.domButtonUpElement.innerHTML = "Uncover";
+		this.domButtonUpElement.style.position = "absolute";
+		this.domButtonUpElement.style.left = 0;
+		this.domButtonUpElement.style.zIndex = 10;
+		
+		this.domButtonBackElement = document.createElement("button");
+		this.domButtonBackElement.innerHTML = "Hide";
+		this.domButtonBackElement.style.position = "absolute";
+		this.domButtonBackElement.style.right = 0;
+		this.domButtonBackElement.style.zIndex = 10;
+
+		this.domDiv.appendChild(this.domButtonUpElement);
+		this.domDiv.appendChild(this.domButtonBackElement);
+		this.domDiv.appendChild(this.domElement);
+		
 		this.domElement.addEventListener("mouseout",((evt) => {
 			this.mousex = -1;
 			this.mousey = -1;
@@ -218,7 +239,9 @@ class ChessBoard extends Board {
 		var y = {};
 		
 		if(typeof document !== "undefined") y = document.createElement("img");
-		y.src = "img/" + imgName + ".png";
+		y.src1 = "img/" + imgName + ".png";
+		y.src2 = "img/back01.gif";
+		y.src = y.src1;
 		y.shape = name;
 		y.color = color;
 		y.onload = this.render.bind(this);
@@ -236,7 +259,9 @@ class DiceSet extends Board {
 		
 		for(let i = 1;i <= 16;++i) {
 			let y = document.createElement("img");
-			y.src = "img/Alea_" + Math.trunc(6 * Math.random() + 1) + ".png";
+			y.src1 = "img/Alea_" + Math.trunc(6 * Math.random() + 1) + ".png";
+			y.src2 = "img/back01.gif";
+			y.src = y.src1;
 			y.index = i;
 			y.onload = this.render.bind(this);
 			this.board.push(y);
@@ -268,7 +293,9 @@ class CardSet extends Board {
 		xs.forEach((c) => {
 			for(let i = 1;i <= 13;++i) {
 				let y = document.createElement("img");
-				y.src = "img/" + (i <= 9 ? "0" : "") + i + c + ".gif";
+				y.src1 = "img/" + (i <= 9 ? "0" : "") + i + c + ".gif";
+				y.src2 = "img/back01.gif";
+				y.src = y.src1;
 				y.color = c;
 				y.index = i;
 				y.onload = this.render.bind(this);
@@ -281,24 +308,24 @@ class CardSet extends Board {
 }
 
 let cb = new ChessBoard();
-document.body.appendChild(cb.domElement);
-cb.domElement.style.width = "25%";
-cb.domElement.style.float = "left";
+document.body.appendChild(cb.domDiv);
+cb.domDiv.style.width = "25%";
+cb.domDiv.style.float = "left";
 
 let cs = new CardSet();
-document.body.appendChild(cs.domElement);
-cs.domElement.style.width = "25%";
-cs.domElement.style.float = "left";
+document.body.appendChild(cs.domDiv);
+cs.domDiv.style.width = "25%";
+cs.domDiv.style.float = "left";
 
 let ds = new DiceSet();
-document.body.appendChild(ds.domElement);
-ds.domElement.style.width = "25%";
-ds.domElement.style.float = "left";
+document.body.appendChild(ds.domDiv);
+ds.domDiv.style.width = "25%";
+ds.domDiv.style.float = "left";
 
 let eb = new EmptyBoard();
-document.body.appendChild(eb.domElement);
-eb.domElement.style.height = "30%";
-eb.domElement.style.float = "left";
+document.body.appendChild(eb.domDiv);
+eb.domDiv.style.height = "30%";
+eb.domDiv.style.float = "left";
 </script>
 </body>
 </html>

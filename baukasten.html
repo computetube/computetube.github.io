@@ -324,20 +324,47 @@ class CardSet extends Board {
 	}
 }
 
+class RWTarotCardSet extends Board {
+	constructor() {
+		super();
+		
+		this.w = this.h = 9;
+	
+		this.board = [];
+		
+		for(let i = 1;i <= 78;++i) {
+			let y = document.createElement("img");
+			y.src1 = "img/tarot_rw_" + (i <= 9 ? "0" : "") + i + ".jpg";
+			y.src2 = "img/back04.jpg";
+			y.src = y.src2;
+			y.index = i;
+			y.onload = this.render.bind(this);
+			this.board.push(y);
+		}
+		
+		this.board = shuffle(this.board);
+	}
+}
+
 let cb = new ChessBoard();
 document.body.appendChild(cb.domDiv);
-cb.domDiv.style.width = "25%";
+cb.domDiv.style.width = "22%";
 cb.domDiv.style.float = "left";
 
 let cs = new CardSet();
 document.body.appendChild(cs.domDiv);
-cs.domDiv.style.width = "25%";
+cs.domDiv.style.width = "22%";
 cs.domDiv.style.float = "left";
 
 let ds = new DiceSet();
 document.body.appendChild(ds.domDiv);
-ds.domDiv.style.width = "25%";
+ds.domDiv.style.width = "22%";
 ds.domDiv.style.float = "left";
+
+let tcs = new RWTarotCardSet();
+document.body.appendChild(tcs.domDiv);
+tcs.domDiv.style.width = "22%";
+tcs.domDiv.style.float = "left";
 
 let eb = new EmptyBoard();
 document.body.appendChild(eb.domDiv);

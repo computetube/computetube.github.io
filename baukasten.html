@@ -133,6 +133,7 @@ class Board {
 		//this.domButtonUpElement.style.position = "absolute";
 		//this.domButtonUpElement.style.left = 0;
 		this.domButtonUpElement.style.zIndex = 10;
+		this.domButtonUpElement.style.float = "left";
 		this.domButtonUpElement.className ="btn btn-primary"
 		this.domButtonUpElement.addEventListener("click",function() {
 			this.board.forEach((p) => {
@@ -145,6 +146,7 @@ class Board {
 		//this.domButtonBackElement.style.position = "absolute";
 		//this.domButtonBackElement.style.right = 0;
 		this.domButtonBackElement.style.zIndex = 10;
+		this.domButtonBackElement.style.float = "left";
 		this.domButtonBackElement.className ="btn btn-primary"
 		this.domButtonBackElement.addEventListener("click",function() {
 			this.board.forEach((p) => {
@@ -164,6 +166,7 @@ class Board {
 		//this.domButtonLockDivElement.style.position = "absolute";
 		//this.domButtonLockDivElement.style.left = "65%";
 		this.domButtonLockDivElement.style.zIndex = 10;
+		this.domButtonLockDivElement.style.float = "left";
 		this.domButtonLockDivElement.appendChild(this.domButtonLockElement);
 		
 		this.domButtonResetElement = document.createElement("button");
@@ -171,6 +174,7 @@ class Board {
 		//this.domButtonResetElement.style.position = "absolute";
 		//this.domButtonResetElement.style.left = "35%";
 		this.domButtonResetElement.style.zIndex = 10;
+		this.domButtonResetElement.style.float = "left";
 		this.domButtonResetElement.className ="btn btn-primary"
 		this.domButtonResetElement.addEventListener("click",function() {
 			boards.forEach((b) => {

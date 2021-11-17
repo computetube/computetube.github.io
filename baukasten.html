@@ -130,8 +130,8 @@ class Board {
 
 		this.domButtonUpElement = document.createElement("button");
 		this.domButtonUpElement.innerHTML = "Uncover";
-		this.domButtonUpElement.style.position = "absolute";
-		this.domButtonUpElement.style.left = 0;
+		//this.domButtonUpElement.style.position = "absolute";
+		//this.domButtonUpElement.style.left = 0;
 		this.domButtonUpElement.style.zIndex = 10;
 		this.domButtonUpElement.className ="btn btn-primary"
 		this.domButtonUpElement.addEventListener("click",function() {
@@ -142,8 +142,8 @@ class Board {
 		
 		this.domButtonBackElement = document.createElement("button");
 		this.domButtonBackElement.innerHTML = "Hide";
-		this.domButtonBackElement.style.position = "absolute";
-		this.domButtonBackElement.style.right = 0;
+		//this.domButtonBackElement.style.position = "absolute";
+		//this.domButtonBackElement.style.right = 0;
 		this.domButtonBackElement.style.zIndex = 10;
 		this.domButtonBackElement.className ="btn btn-primary"
 		this.domButtonBackElement.addEventListener("click",function() {
@@ -161,15 +161,15 @@ class Board {
 		this.domButtonLockDivElement.type = "checkbox";
 		this.domButtonLockDivElement.role = "switch";
 		this.domButtonLockDivElement.className ="form-check form-switch"
-		this.domButtonLockDivElement.style.position = "absolute";
-		this.domButtonLockDivElement.style.left = "65%";
+		//this.domButtonLockDivElement.style.position = "absolute";
+		//this.domButtonLockDivElement.style.left = "65%";
 		this.domButtonLockDivElement.style.zIndex = 10;
 		this.domButtonLockDivElement.appendChild(this.domButtonLockElement);
 		
 		this.domButtonResetElement = document.createElement("button");
 		this.domButtonResetElement.innerHTML = "Reset";
-		this.domButtonResetElement.style.position = "absolute";
-		this.domButtonResetElement.style.left = "35%";
+		//this.domButtonResetElement.style.position = "absolute";
+		//this.domButtonResetElement.style.left = "35%";
 		this.domButtonResetElement.style.zIndex = 10;
 		this.domButtonResetElement.className ="btn btn-primary"
 		this.domButtonResetElement.addEventListener("click",function() {

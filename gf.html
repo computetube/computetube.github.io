@@ -1,0 +1,26 @@
+<html>
+<head>
+<meta charset="utf-8">
+</head>
+<body>
+    <script src="gpu-browser.min.js"></script>
+	<script src="MyLib.js"></script>
+	
+<canvas id="xy" width=512 height=512 style="width:90%;height:90%"></canvas>
+
+<script>
+let rnd = new GeneralRandom();
+let cv = document.getElementById("xy");
+let ctx = cv.getContext("2d");
+
+ctx.fillRect(0,0,cv.width,cv.height);
+ctx.beginPath();
+ctx.strokeStyle = "white";
+ctx.moveTo(0,0);
+for(let x = 0;x < 1;x += 0.01) ctx.lineTo(x * cv.width,rnd.f(x) * cv.height);
+ctx.stroke();
+</script>
+</body>
+</html>
+
+

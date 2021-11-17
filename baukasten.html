@@ -1,7 +1,14 @@
 <html>
 
+<head>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+</head>
 
 <body>
+<table>
+<tr>
+<td id="abc">
+
 <script>
 let boards = [];
 let x = null;
@@ -10,8 +17,8 @@ function getOffset( el ) {
 	var _x = 0;
 	var _y = 0;
 	while( el && !isNaN( el.offsetLeft ) && !isNaN( el.offsetTop ) ) {
-	_x += el.offsetLeft - el.scrollLeft;
-	_y += el.offsetTop - el.scrollTop;
+	_x += el.offsetLeft;
+	_y += el.offsetTop;
 	el = el.offsetParent;
 	}
 	return { top: _y, left: _x };
@@ -20,27 +27,32 @@ function getOffset( el ) {
 function xMouseMove(evt) {
 	if(x == null) return;
 	let xyz = getOffset(x);
-	x.style.top = evt.offsetY + xyz.top - Math.round(x.offsetHeight / 2);
-	x.style.left = evt.offsetX + xyz.left - Math.round(x.offsetWidth / 2);
+	x.style.top = evt.pageY - Math.round(x.offsetHeight / 2);
+	x.style.left = evt.pageX - Math.round(x.offsetWidth / 2);
 	x.style.opacity = 0.5;
 
 	boards.forEach((b) => {
 		var xy = getOffset(b.domElement);
-		var xy2 = getOffset(x);
 		
-		b.mousex = Math.floor((evt.x + xy2.left - xy.left - x.offsetLeft - b.domElement.offsetLeft) * b.w / b.domElement.offsetWidth);
-		b.mousey = Math.floor((evt.y + xy2.top - xy.top - x.offsetTop - b.domElement.offsetTop) * b.h / b.domElement.offsetHeight);
+		b.mousex = Math.floor((evt.pageX - xy.left) * b.w / b.domElement.offsetWidth);
+		b.mousey = Math.floor((evt.pageY - xy.top) * b.h / b.domElement.offsetHeight);
 
 		if(b.mousex > b.w - 1) {
 			b.mousex = -1;
 		} 
 
-		if(b.mousex >= 0 && b.mousey >= 0) {
+		/*if(b.mousex >= 0 && b.mousey >= 0) {
 			if(evt.target == b.domElement) {
-				x.style.left = Math.round(b.domElement.offsetWidth * b.mousex / b.w - (xy2.left - xy.left - x.offsetLeft - b.domElement.offsetLeft));
-				x.style.top = Math.round(b.domElement.offsetHeight * b.mousey / b.h - (xy2.top - xy.top - x.offsetTop - b.domElement.offsetTop));
+				x.style.left = Math.round(b.domElement.offsetWidth * b.mousex / b.w + xy.left);
+				x.style.top = Math.round(b.domElement.offsetHeight * b.mousey / b.h + xy.top);
 			}
-		}
+		}*/
+		b.render();
+	});
+}
+
+function render() {
+	boards.forEach((b) => {
 		b.render();
 	});
 }
@@ -55,19 +67,23 @@ function xClick(evt) {
 				b.board[b.mousex + b.w * b.mousey] = null;
 				document.body.appendChild(y);
 
+				y.style.width = 200;
 				y.style.position = "absolute";
 				y.style.zIndex = "10";	
 				y.style.top = evt.offsetY + xy.top - Math.round(y.offsetHeight / 2);
 				y.style.left = evt.offsetX + xy.left - Math.round(y.offsetWidth / 2);
 				
 				y.addEventListener("mousemove",xMouseMove);
+				y.addEventListener("touchmove",xMouseMove);
 				y.addEventListener("mousedown",xClick);
 				
-				y.src = y.src1;
-				y.style.width = 200;
+				if(x.board.domButtonLockElement.checked) y.src = y.src1;
 				y.style.opacity = 0.5;
 			}
 			b.board[b.mousex + b.w * b.mousey] = x;
+			if(!x.board.domButtonLockElement.checked) x.src = x.src1;
+			b.lastx = b.mousex;
+			b.lasty = b.mousey;
 			document.body.removeChild(x);
 			x = y;
 		} 
@@ -79,22 +95,25 @@ function xClick(evt) {
 class Board {	
 	domElementClick(evt) {
 		x = this.board[this.mousex + this.w * this.mousey];
-		x.src = x.src1;
+		if(this.domButtonLockElement.checked) x.src = x.src1;
 		this.board[this.mousex + this.w * this.mousey] = null;
+		this.lastx = this.mousex;
+		this.lasty = this.mousey;
 		this.render();
 		document.body.appendChild(x);
 		
 		var cv = this.domElement;
 		var xy = getOffset(cv);
 		
+		x.style.width = 200;
 		x.style.position = "absolute";
 		x.style.zIndex = "10";	
-		x.style.top = evt.offsetY + xy.top - Math.round(x.offsetHeight / 2);
-		x.style.left = evt.offsetX + xy.left - Math.round(x.offsetWidth / 2);
-		x.style.width = 200;
+		x.style.top = evt.pageY - Math.round(x.offsetHeight / 2);
+		x.style.left = evt.pageX - Math.round(x.offsetWidth / 2);
 		x.style.opacity = 0.5;
 		
 		x.addEventListener("mousemove",xMouseMove);
+		x.addEventListener("touchmove",xMouseMove);
 		x.addEventListener("click",xClick);
 	}
 	
@@ -114,9 +133,10 @@ class Board {
 		this.domButtonUpElement.style.position = "absolute";
 		this.domButtonUpElement.style.left = 0;
 		this.domButtonUpElement.style.zIndex = 10;
+		this.domButtonUpElement.className ="btn btn-primary"
 		this.domButtonUpElement.addEventListener("click",function() {
 			this.board.forEach((p) => {
-				if(p) p.src = p.src1;
+				if(p != null) p.src = p.src1;
 			});
 		}.bind(this));
 		
@@ -125,13 +145,49 @@ class Board {
 		this.domButtonBackElement.style.position = "absolute";
 		this.domButtonBackElement.style.right = 0;
 		this.domButtonBackElement.style.zIndex = 10;
+		this.domButtonBackElement.className ="btn btn-primary"
 		this.domButtonBackElement.addEventListener("click",function() {
 			this.board.forEach((p) => {
-				if(p) p.src = p.src2;
+				if(p != null) p.src = p.src2;
 			});
 		}.bind(this));
 
+
+		this.domButtonLockElement = document.createElement("input");
+		this.domButtonLockElement.type = "checkbox";
+		this.domButtonLockElement.role = "switch";
+		this.domButtonLockElement.className ="form-check-input"
+		this.domButtonLockDivElement = document.createElement("div");
+		this.domButtonLockDivElement.type = "checkbox";
+		this.domButtonLockDivElement.role = "switch";
+		this.domButtonLockDivElement.className ="form-check form-switch"
+		this.domButtonLockDivElement.style.position = "absolute";
+		this.domButtonLockDivElement.style.left = "65%";
+		this.domButtonLockDivElement.style.zIndex = 10;
+		this.domButtonLockDivElement.appendChild(this.domButtonLockElement);
+		
+		this.domButtonResetElement = document.createElement("button");
+		this.domButtonResetElement.innerHTML = "Reset";
+		this.domButtonResetElement.style.position = "absolute";
+		this.domButtonResetElement.style.left = "35%";
+		this.domButtonResetElement.style.zIndex = 10;
+		this.domButtonResetElement.className ="btn btn-primary"
+		this.domButtonResetElement.addEventListener("click",function() {
+			boards.forEach((b) => {
+				b.board.forEach((p,i) => {
+					if(p != null) if(p.board == this) b.board[i] = null;
+				});
+			});
+			boards.forEach((b) => {
+				b.render();
+			});
+			this.reset();
+			this.initCards();
+		}.bind(this));
+
 		this.domDiv.appendChild(this.domButtonUpElement);
+		this.domDiv.appendChild(this.domButtonResetElement);
+		this.domDiv.appendChild(this.domButtonLockDivElement);
 		this.domDiv.appendChild(this.domButtonBackElement);
 		this.domDiv.appendChild(this.domElement);
 		
@@ -142,14 +198,19 @@ class Board {
 		}).bind(this));
 		
 		this.domElement.addEventListener("click",this.domElementClick.bind(this));
-		this.domElement.addEventListener("mousemove",xMouseMove);
+		//this.domElement.addEventListener("mousemove",xMouseMove);
 		
 		this.domElement.addEventListener("mousemove",((evt) => {
+			if(x != null) {
+		x.style.top = evt.pageY - Math.round(x.offsetHeight / 2);
+		x.style.left = evt.pageX - Math.round(x.offsetWidth / 2);
+			}
+		
 			var cv = this.domElement;
 			var xy = getOffset(cv);
 			
-			this.mousex = Math.floor((evt.x - xy.left) * this.w / cv.offsetWidth);
-			this.mousey = Math.floor((evt.y - xy.top) * this.h / cv.offsetHeight);
+			this.mousex = Math.floor((evt.offsetX + 10) * this.w / cv.offsetWidth);
+			this.mousey = Math.floor((evt.offsetY + 10) * this.h / cv.offsetHeight);
 
 			if(this.mousex > this.w - 1) this.mousex = - 1;
 			if(this.mousey > this.h - 1) this.mousey = - 1;
@@ -161,11 +222,26 @@ class Board {
 			
 			this.render();
 		}).bind(this));
-		this.domElement.addEventListener("mousemove",xMouseMove);
+		//this.domElement.addEventListener("mousemove",xMouseMove);
 		
 		boards.push(this);
+		
+		this.lastx = -1;
+		this.lasty = -1;
+		
+		this.reset();
+		this.initCards();
 	}
 
+	initCards() {
+		this.board.forEach((p) => {
+			if(p != null) {
+				p.board = this;
+				p.onload = render;
+			}
+		});
+	}
+	
 	render() {
 		var cv = this.domElement;
 		var ctx = cv.getContext("2d");
@@ -199,13 +275,20 @@ class Board {
 			ctx.rect(this.mousex * cv.width / this.w,this.mousey * cv.height / this.h,cv.width / this.w,cv.height / this.h);
 			ctx.stroke();
 		}
+		
+		if(this.lastx >= 0 && this.lasty >= 0) {
+			ctx.strokeStyle = "pink"
+			ctx.lineWidth = 100 / this.w * cv.width / cv.offsetWidth;
+			
+			ctx.beginPath();
+			ctx.rect(this.lastx * cv.width / this.w,this.lasty * cv.height / this.h,cv.width / this.w,cv.height / this.h);
+			ctx.stroke();
+		}
 	}
 }
 
 class EmptyBoard extends Board { 
-	constructor() {
-		super();
-		
+	reset() {
 		this.w = 20;
 		this.h = 4;
 
@@ -221,9 +304,7 @@ class EmptyBoard extends Board {
 
 
 class ChessBoard extends Board { 
-	constructor() {
-		super();
-		
+	reset() {
 		this.w = this.h = 8;
 	
 		this.board = [];
@@ -261,16 +342,14 @@ class ChessBoard extends Board {
 		y.src = y.src2;
 		y.shape = name;
 		y.color = color;
-		y.onload = this.render.bind(this);
+		y.onload = render;
 		
 		return y;
 	}
 }
 
 class DiceSet extends Board {
-	constructor() {
-		super();
-		
+	reset() {
 		this.w = this.h = 4;
 		this.board = [];
 		
@@ -280,7 +359,6 @@ class DiceSet extends Board {
 			y.src2 = "img/back03.png";
 			y.src = y.src2;
 			y.index = i;
-			y.onload = this.render.bind(this);
 			this.board.push(y);
 		}
 	}
@@ -299,9 +377,7 @@ function shuffle(xs) {
 }
 
 class CardSet extends Board {
-	constructor() {
-		super();
-		
+	reset() {
 		this.w = this.h = 8;
 	
 		let xs = ["c","d","h","s"];
@@ -315,7 +391,7 @@ class CardSet extends Board {
 				y.src = y.src2;
 				y.color = c;
 				y.index = i;
-				y.onload = this.render.bind(this);
+				y.onload = render;
 				this.board.push(y);
 			}
 		});
@@ -325,20 +401,36 @@ class CardSet extends Board {
 }
 
 class RWTarotCardSet extends Board {
-	constructor() {
-		super();
-		
+	reset() {
 		this.w = this.h = 10;
 	
 		this.board = [];
 		
 		for(let i = 1;i <= 78;++i) {
 			let y = document.createElement("img");
-			y.src1 = "img/tarot_rw_" + (i <= 9 ? "0" : "") + i + ".jpg";
+			y.src1 = "img/tarot_rw_" + i + ".jpg";
 			y.src2 = "img/back04.jpg";
 			y.src = y.src2;
 			y.index = i;
-			y.onload = this.render.bind(this);
+			this.board.push(y);
+		}
+		
+		this.board = shuffle(this.board);
+	}
+}
+
+class KieferTarotCardSet extends Board {
+	reset() {
+		this.w = this.h = 4;
+	
+		this.board = [];
+		
+		for(let i = 0;i <= 12;++i) {
+			let y = document.createElement("img");
+			y.src1 = "img/img" + i + ".png";
+			y.src2 = "img/back05.png";
+			y.src = y.src2;
+			y.index = i;
 			this.board.push(y);
 		}
 		
@@ -347,30 +439,50 @@ class RWTarotCardSet extends Board {
 }
 
 let cb = new ChessBoard();
-document.body.appendChild(cb.domDiv);
-cb.domDiv.style.width = "22%";
+document.getElementById("abc").appendChild(cb.domDiv);
+cb.domDiv.style.width = "19%";
 cb.domDiv.style.float = "left";
 
 let cs = new CardSet();
-document.body.appendChild(cs.domDiv);
-cs.domDiv.style.width = "22%";
+document.getElementById("abc").appendChild(cs.domDiv);
+cs.domDiv.style.width = "19%";
 cs.domDiv.style.float = "left";
 
 let ds = new DiceSet();
-document.body.appendChild(ds.domDiv);
-ds.domDiv.style.width = "22%";
+document.getElementById("abc").appendChild(ds.domDiv);
+ds.domDiv.style.width = "19%";
 ds.domDiv.style.float = "left";
 
 let tcs = new RWTarotCardSet();
-document.body.appendChild(tcs.domDiv);
-tcs.domDiv.style.width = "22%";
+document.getElementById("abc").appendChild(tcs.domDiv);
+tcs.domDiv.style.width = "19%";
 tcs.domDiv.style.float = "left";
 
+let ktcs = new KieferTarotCardSet();
+document.getElementById("abc").appendChild(ktcs.domDiv);
+ktcs.domDiv.style.width = "19%";
+ktcs.domDiv.style.float = "left";
+
 let eb = new EmptyBoard();
-document.body.appendChild(eb.domDiv);
+document.getElementById("abc").appendChild(eb.domDiv);
 eb.domDiv.style.height = "30%";
 eb.domDiv.style.float = "left";
+
 </script>
+</td>
+</tr>
+<tr>
+<td>
+<ol style="clear:both">
+	<li><h1>Würfel Skat Sudoku</h1> : <img src="games/SkatSudoku.png" style="width:10%"> Die Würfel werden zwischen den Karten platziert und einzelne Kartenwerte dürfen negiert werden und die Summe muss den Würfelwert ergeben </li>
+	<li><h1>Mau Mau Aufbau Mahjong</h1> : <img src="games/MauMauAufbauMahjong.png" style="width:10%"> Es werden 4 zufällige Karten zentral abgelegt. Horizontal und vertikal nach den Mau Mau Regeln anlegen </li>
+	<li><h1>Der Skat Schach Computer</h1> Kreuz : äußerster Ring; Pik : zweiter Ring; Herz : dritter Ring ; Karo : Zentrum; Ass, 2, 3, 4 ... : Reihe 1,2,3,4 ; 9==8 und 10==7 und 9==1 und 10==2 ; Zug : von Ring nach Reihe oder von Reihe nach Ring; notfalls nächste Karte</li>
+</ol>
+</td>
+</tr>
+</table>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+
 </body>
 </html>
 

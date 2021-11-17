@@ -1,5 +1,9 @@
 <html>
 <head>
+<style type="text/css">
+body {background:none transparent;
+}
+</style>
 </head>
 <body>
 
@@ -251,7 +255,8 @@ function init() {
 	s.isScene = true;
 	scene.add(s);
 	
-	renderer = new THREE.WebGLRenderer( { antialias: true } );
+	renderer = new THREE.WebGLRenderer( { antialias: true, alpha: true} );
+	renderer.setClearColor( 0x000000, 0 );
 	renderer.setPixelRatio( window.devicePixelRatio );
 	renderer.setSize( window.innerWidth, window.innerHeight );
 	de = renderer.domElement;
@@ -286,6 +291,8 @@ function animate() {
 }
 
 function render() {
+	renderer.setSize( window.innerWidth, window.innerHeight );
+
 	scene.traverse( function ( object ) {
 
 		if ( object.isScene === true ) {

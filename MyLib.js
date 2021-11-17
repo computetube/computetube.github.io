@@ -1,5 +1,204 @@
 
 
+
+
+
+
+
+class FractalHeightLine {
+	constructor(width,amp,decay) {
+		this.width = width;
+		
+		let hmap = [];
+		for(let y = 0;y < width;++y) {
+			hmap.push(null);
+		}
+		
+		hmap[0] = amp * Math.random();
+		hmap[width - 1] = amp * Math.random();
+		
+		this.fractal(hmap,0,width - 1,amp,decay);
+		
+		this.hmap = hmap;
+	}
+	
+	fractal(hmap,x0,x1,amp,decay) {
+		let xx = Math.round((x0 + x1) / 2);
+
+		if(hmap[xx] == null) hmap[xx] = (hmap[x0] + hmap[x1]) / 2 + amp * Math.random();
+
+		if(x0 != xx && x1 != xx) {
+			this.fractal(hmap,x0,xx,-amp * decay,decay);
+			this.fractal(hmap,xx,x1,-amp * decay,decay);
+		}
+	}
+	
+	call(x) {
+		let i = Math.round(s * (this.width - 1));
+		
+		return this.hmap[i];
+	}
+}
+
+
+
+
+
+
+
+
+class FractalHeightMap {
+	constructor(width,decay) {
+		this.width = width;
+		
+		let hmap = [];
+		for(let y = 0;y < width;++y) {
+			let xs = [];
+			for(let x = 0;x < width;++x) {
+				xs.push(null);
+			}
+			hmap.push(xs);
+		}
+		
+		let len = 50;
+		hmap[0][0] = len;
+		hmap[width - 1][width - 1] = len;
+		hmap[width - 1][0] = len;
+		hmap[0][width - 1] = len;
+		
+		this.fractal(hmap,0,width - 1,0,width - 1,50.0,decay);
+		
+		for(let i = 1;i < width - 1;++i) {
+			for(let j = 1;j < width - 1;++j) {
+				hmap[i][j] = null;
+			}
+		}
+		
+		for(let i = 0;i < width;++i) {
+			hmap[i][0] = hmap[i][width - 1];
+			hmap[0][i] = hmap[width - 1][i];
+		}
+
+		this.fractal(hmap,0,width - 1,0,width - 1,50.0,decay);
+		
+		this.hmap = hmap;
+	}
+	
+	fractal(hmap,x0,x1,y0,y1,amp,decay) {
+		let xx = Math.round((x0 + x1) / 2);
+		let yy = Math.round((y0 + y1) / 2);
+
+		if(hmap[x0][yy] == null) hmap[x0][yy] = (hmap[x0][y0] + hmap[x0][y1]) / 2 + amp * Math.random();
+		if(hmap[x1][yy] == null) hmap[x1][yy] = (hmap[x1][y0] + hmap[x1][y1]) / 2 + amp * Math.random();
+		if(hmap[xx][y0] == null) hmap[xx][y0] = (hmap[x0][y0] + hmap[x1][y0]) / 2 + amp * Math.random();
+		if(hmap[xx][y1] == null) hmap[xx][y1] = (hmap[x0][y1] + hmap[x1][y1]) / 2 + amp * Math.random();
+		if(hmap[xx][yy] == null) hmap[xx][yy] = (hmap[x0][y0] + hmap[x1][y0] + hmap[x0][y1] + hmap[x1][y1]) / 4 + amp * Math.random();
+
+		if(x0 != xx && x1 != xx && y0 != yy && y1 != yy) {
+			this.fractal(hmap,x0,xx,y0,yy,-amp * decay,decay);
+			this.fractal(hmap,xx,x1,y0,yy,-amp * decay,decay);
+			this.fractal(hmap,x0,xx,yy,y1,-amp * decay,decay);
+			this.fractal(hmap,xx,x1,yy,y1,-amp * decay,decay);
+		}
+	}
+	
+	call(s,t) {
+		let i = Math.round(s * (this.width - 1));
+		let j = Math.round(t * (this.width - 1));
+		
+		return this.hmap[i][j];
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+   	const blur = new GPU().createKernel(function (xs) {
+   		let sum = 0;
+   		let f = 0;
+   		let n = 20;
+   		for(let i = 0;i < n;++i) {let x = 1.0 * (n - i) / n;sum += x * xs[this.thread.x - i];f += x;}
+   		for(let i = 0;i < n;++i) {let x = 1.0 * (n - i) / n;sum += x * xs[this.thread.x + i];f += x;}
+   		return sum / f;
+   	});
+
+
+class Instrument {
+    constructor(arr,add) {
+        this.wave = arr;
+        this.add = add;
+		this.r = new GeneralRandom();
+        
+        let leftVol = 0.5 * this.r.random() + 0.5;
+        this.chVols = [leftVol,1 - leftVol];
+
+    }
+    
+    render(buffer,offset,tone,sampleRate,vol,len) {
+		const fr = Math.pow(2.0,tone / 12.0) * sampleRate / 44100.0;	
+        const n = Math.round(this.r.random() * 200);
+        const channels = 2;
+       
+        for(var channel = 0; channel < channels; channel++) {
+            var nowBuffering = buffer.getChannelData(channel);
+            var xs = this.add(nowBuffering,this.wave,offset + n,fr,channel,vol * this.chVols[channel]);
+            for(let i = 0;i < len * 8000 && i < xs.length;++i) 
+                if(i + offset + n < nowBuffering.length)
+                    nowBuffering[i + offset + n] = xs[i];
+    	}	
+    }
+}
+
+	function instrumentsF(add2) {
+		let xs = [];
+		
+		for(let i = 0;i < 10;++i) {
+			let r = new GeneralRandom();
+			
+        	 let a = r.random();
+       	  	 let b = r.random();
+      	 	  let c = r.random();
+	         let d = r.random();
+	         let e = r.random();
+	         let f = r.random();
+	         let g = r.random();
+			xs.push(add2(a,b,c,d,e,f,g));
+		}
+		
+		let p = 1;// + 0.2 * Math.random();
+		[xs].forEach((x) => {
+		    for(let j = 0;j < x.length;++j) {
+				let _min = 100000;
+				let _max = -100000;
+				let sum = 0;
+				let n = 0;
+				for(let i = 0;i < x[j].length;++i) if(x[j][i] > _max) _max = x[j][i];		
+				for(let i = 0;i < x[j].length;++i) if(x[j][i] < _min) _min = x[j][i];	
+				for(let i = 0;i < x[j].length;++i) x[j][i] /= Math.max(Math.abs(_max),Math.abs(_min));
+				console.log(x[j]);
+				for(let i = 0;i < x[j].length;++i) for(k = i - 10;k < i + 10;++k) if(k > 0 && k < x[j].length) {sum += Math.pow(Math.abs(x[j][k]) * (1 / (1 + Math.pow(i - k,2))),p);n += 1;}
+				sum = Math.pow(Math.abs(sum),1.0 / p);
+				sum /= n;
+				console.log("sum " + sum);
+				for(let i = 0;i < x[j].length;++i) x[j][i] = x[j][i] / sum * 500.0;
+				console.log(x[j]);
+		    }
+		});
+	 
+ 		console.log(xs[0]);
+		
+		return xs;
+	}
+
+
 function fractal(cfg) {
 	let mathx = (cfg[3] - cfg[2]) * this.thread.x / cfg[0] + cfg[2];
 	let mathy = cfg[5] - (cfg[5] - cfg[4]) * this.thread.y / cfg[1];
@@ -68,6 +267,50 @@ xs = xs.slice(0);
 	return ys;
 }
 
+function rand(n) {
+    return Math.trunc(100000 * Math.random()) % n;
+}
+
+class GeneralRandom {
+	constructor() {
+ 		let xs = [];
+		for(let i = 0;i < 500;++i) xs.push(Math.random());
+		
+		let a = Math.PI / 2;
+		
+		this.fs = [];
+		for(let i = 0;i < 30;++i) 
+			switch(rand(6)) {
+				case 0 : this.fs.push((x) => {return Math.pow(x,xs[2 * i] * (a - 1) + 1)});break;
+				case 1 : this.fs.push((x) => {return Math.pow(x,1 / (xs[2 * i] * (a - 1) + 1))});break;
+				case 2 : this.fs.push((x) => {let y = xs[2 * i] - x;if(y < 0) return y + 1; else return y;});break;
+				case 3 : this.fs.push((x) => {return (Math.sin(x * Math.PI * 2) + 1) / 2});break;
+				case 4 : this.fs.push((x) => {return (Math.cos(x * Math.PI * 2) + 1) / 2});break;
+				//case 5 : this.fs.push((x) => {let y = x + xs[2 * i];if(y > 1) return y - 1; else return y;});break;
+				case 5 : this.fs.push((x) => {return 1 - x;});break;
+				/*case 4 : this.fs.push((x) => {return x * (xs[2 * i] - xs[2 * i + 1]) + xs[2 * i + 1];});break;
+				case 5 : this.fs.push((x) => {return xs[2 * i + 1] - x * (xs[2 * i + 1] - xs[2 * i]);});break;
+				default : this.fs.push((x) => {return x});break;*/
+			}
+			
+		this.x = Math.random();
+	}
+	
+	random() {
+		return Math.random();
+		/*this.x = Math.random();
+		for(let i = 0;i < 10;++i) this.x = this.f(this.x);
+		return this.x;*/
+	}
+	
+	f(x) {
+		this.fs.forEach((f) => {x = f(x)});
+		
+		return x;
+	}
+}
+    let r = new GeneralRandom();
+    for(let i = 0;i < 20;++i) console.log(r.random());
 
 class Chess {
 	team() {
@@ -3777,22 +4020,5 @@ Tarot.prototype.get = function() {
 }
 
 
-
-
-if(typeof module !== "undefined")
-module.exports = {
-	md5 : md5,
-	random : Random,
-	tarot : Tarot,
-	shuffle : shuffle,
-	Chess : {
-		Chess : Chess,
-		ChessVariants : {
-			CLassicChess : ClassicChess,
-			ZauberStrikeChess : ZauberStrikeChess,
-			GardenEdenChess : GardenEdenChess
-		}
-	},
-};
 
 

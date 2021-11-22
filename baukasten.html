@@ -384,10 +384,11 @@ class CardSet extends Board {
 	reset() {
 		this.w = this.h = 8;
 	
-		let xs = ["c","d","h","s"];
+		let xs = ["d","h","s","c"];
+		let ys = [0,1,10,11];
 		this.board = [];
 		
-		xs.forEach((c) => {
+		xs.forEach((c,j) => {
 			for(let i = 1;i <= 13;++i) {
 				let y = document.createElement("img");
 				y.src1 = "img/" + (i <= 9 ? "0" : "") + i + c + ".gif";
@@ -396,6 +397,7 @@ class CardSet extends Board {
 				y.color = c;
 				y.index = i;
 				y.onload = render;
+				y.title = "Letter / Buchstabe : " + String.fromCharCode(65 + i + ys[j]);
 				this.board.push(y);
 			}
 		});

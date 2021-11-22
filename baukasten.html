@@ -206,8 +206,8 @@ class Board {
 		
 		this.domElement.addEventListener("mousemove",((evt) => {
 			if(x != null) {
-		x.style.top = evt.pageY - Math.round(x.offsetHeight / 2);
-		x.style.left = evt.pageX - Math.round(x.offsetWidth / 2);
+				x.style.top = evt.pageY - Math.round(x.offsetHeight / 2);
+				x.style.left = evt.pageX - Math.round(x.offsetWidth / 2);
 			}
 		
 			var cv = this.domElement;
@@ -223,6 +223,9 @@ class Board {
 				this.mousex = -1;
 				this.mousey = -1;
 			}
+			
+								this.domElement.title = this.board[this.mousex + this.w * this.mousey];
+
 			
 			this.render();
 		}).bind(this));

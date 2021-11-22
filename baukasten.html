@@ -222,9 +222,10 @@ class Board {
 			if(!this.board[this.mousex + this.w * this.mousey]) { // || (this.board[this.mousex + this.w * this.mousey].color != this.board.color && !this.team())) {
 				this.mousex = -1;
 				this.mousey = -1;
+				this.domElement.title = null;
+			} else {
+				this.domElement.title = this.board[this.mousex + this.w * this.mousey].title;
 			}
-			
-								this.domElement.title = this.board[this.mousex + this.w * this.mousey];
 
 			
 			this.render();

@@ -187,7 +187,7 @@ class Instrument {
 				sum /= n;
 				sum = Math.pow(Math.abs(sum),1.0 / p);
 				console.log("sum " + sum);
-				for(let i = 0;i < x[j].length;++i) x[j][i] = x[j][i] / sum * 10000.0;
+				for(let i = 0;i < x[j].length;++i) x[j][i] = x[j][i] / sum * 1000.0;
 				console.log(x[j]);
 		    }
 		});

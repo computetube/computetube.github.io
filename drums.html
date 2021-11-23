@@ -17,7 +17,7 @@
     var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
     const add = gpu.createKernel(function (buffer,wave,offset,fr,channel,vol) {
-        return buffer[this.thread.x + offset] + 0.25 * vol * wave[Math.trunc(this.thread.x / 2.0 * 4.0 * fr + channel)] / 100000;
+        return buffer[this.thread.x + offset] + 0.75 * vol * wave[Math.trunc(this.thread.x / 2.0 * 4.0 * fr + channel)] / 100000;
     }).setOutput([22000]);
     gpu.addFunction(function mypow(x,y) {
     	return Math.pow(Math.abs(x),y) * (x < 0 ? -1 : 1);

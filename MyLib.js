@@ -136,8 +136,8 @@ class Instrument {
         this.add = add;
 		this.r = new GeneralRandom();
         
-        let leftVol = 0.5 * this.r.random() + 0.5;
-        this.chVols = [leftVol,1 - leftVol];
+        let leftVol = this.r.random();
+        this.chVols = [leftVol,1.0 - leftVol];
 
     }
     
@@ -172,7 +172,7 @@ class Instrument {
 			xs.push(add2(a,b,c,d,e,f,g));
 		}
 		
-		let p = 1;// + 0.2 * Math.random();
+		let p = 1.5;// + 0.2 * Math.random();
 		[xs].forEach((x) => {
 		    for(let j = 0;j < x.length;++j) {
 				let _min = 100000;
@@ -184,10 +184,10 @@ class Instrument {
 				for(let i = 0;i < x[j].length;++i) x[j][i] /= Math.max(Math.abs(_max),Math.abs(_min));
 				console.log(x[j]);
 				for(let i = 0;i < x[j].length;++i) for(k = i - 10;k < i + 10;++k) if(k > 0 && k < x[j].length) {sum += Math.pow(Math.abs(x[j][k]) * (1 / (1 + Math.pow(i - k,2))),p);n += 1;}
-				sum = Math.pow(Math.abs(sum),1.0 / p);
 				sum /= n;
+				sum = Math.pow(Math.abs(sum),1.0 / p);
 				console.log("sum " + sum);
-				for(let i = 0;i < x[j].length;++i) x[j][i] = x[j][i] / sum * 500.0;
+				for(let i = 0;i < x[j].length;++i) x[j][i] = x[j][i] / sum * 1.0;
 				console.log(x[j]);
 		    }
 		});

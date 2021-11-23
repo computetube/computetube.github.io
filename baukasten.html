@@ -222,9 +222,13 @@ class Board {
 			if(!this.board[this.mousex + this.w * this.mousey]) { // || (this.board[this.mousex + this.w * this.mousey].color != this.board.color && !this.team())) {
 				this.mousex = -1;
 				this.mousey = -1;
-				this.domElement.title = null;
+				this.domElement.title = "";
 			} else {
-				this.domElement.title = this.board[this.mousex + this.w * this.mousey].title;
+				let z = this.board[this.mousex + this.w * this.mousey];
+				if(z.src == z.src1)
+					this.domElement.title = z.title;
+				else
+					this.domElement.title = "";
 			}
 
 			

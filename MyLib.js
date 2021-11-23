@@ -1,6 +1,10 @@
 
 
+let add = null;
 
+    if(typeof(GPU) !== "undefined") add = new GPU().createKernel(function (buffer,wave,offset,fr,channel,vol) {
+        return buffer[this.thread.x + offset] + 0.75 * vol * wave[Math.trunc(this.thread.x / 2.0 * 4.0 * fr + channel)] / 32000;
+    }).setOutput([44000]);
 
 
 
@@ -187,7 +191,7 @@ class Instrument {
 				sum /= n;
 				sum = Math.pow(Math.abs(sum),1.0 / p);
 				console.log("sum " + sum);
-				for(let i = 0;i < x[j].length;++i) x[j][i] = x[j][i] / sum * 1000.0;
+				for(let i = 0;i < x[j].length;++i) x[j][i] = x[j][i] / sum * 100.0;
 				console.log(x[j]);
 		    }
 		});

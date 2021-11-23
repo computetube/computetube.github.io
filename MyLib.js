@@ -3,7 +3,7 @@
 let add = null;
 
     if(typeof(GPU) !== "undefined") add = new GPU().createKernel(function (buffer,wave,offset,fr,channel,vol) {
-        return buffer[this.thread.x + offset] + 0.75 * vol * wave[Math.trunc(this.thread.x / 2.0 * 4.0 * fr + channel)] / 32000;
+        return buffer[this.thread.x + offset] + 0.5 * vol * wave[Math.trunc(this.thread.x / 2.0 * 4.0 * fr + channel)] / 32000;
     }).setOutput([44000]);
 
 

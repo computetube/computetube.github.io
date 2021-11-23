@@ -116,12 +116,11 @@ class FractalHeightMap {
 
 
 
+let blur = null;
 
 
-
-
-
-   	const blur = new GPU().createKernel(function (xs) {
+	IF(typeof(GPU) !== "undefined")
+   	blur = new GPU().createKernel(function (xs) {
    		let sum = 0;
    		let f = 0;
    		let n = 20;

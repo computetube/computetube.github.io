@@ -225,7 +225,7 @@ class Board {
 				this.domElement.title = "";
 			} else {
 				let z = this.board[this.mousex + this.w * this.mousey];
-				let p = /[/][^.].(jpg|png|gif)/;
+				let p = /[/][^.]+[.](jpg|png|gif)/;
 				console.log(z.src.substr(z.src.search(p)) + "    " + z.src1);
 				if(z.src == z.src1)
 					this.domElement.title = z.title;

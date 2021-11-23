@@ -227,7 +227,7 @@ class Board {
 				let z = this.board[this.mousex + this.w * this.mousey];
 				let p = /[/][^/]+[.](jpg|png|gif)/;
 				if(z.src.substr(z.src.search(p)) == z.src1.substr(z.src1.search(p)))
-					this.domElement.title = z.title;
+					this.domElement.title = z.titleß;
 				else
 					this.domElement.title = "";
 			}
@@ -406,7 +406,7 @@ class CardSet extends Board {
 				y.color = c;
 				y.index = i;
 				y.onload = render;
-				y.title = "Letter / Buchstabe : " + String.fromCharCode(64 + i + ys[j]);
+				y.title0 = "Letter / Buchstabe : " + String.fromCharCode(64 + i + ys[j]);
 				this.board.push(y);
 			}
 		});

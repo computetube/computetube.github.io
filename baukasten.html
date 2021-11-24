@@ -206,8 +206,8 @@ class Board {
 		
 		this.domElement.addEventListener("mousemove",((evt) => {
 			if(x != null) {
-				x.style.top = evt.pageY - Math.round(x.offsetHeight / 2);
-				x.style.left = evt.pageX - Math.round(x.offsetWidth / 2);
+		x.style.top = evt.pageY - Math.round(x.offsetHeight / 2);
+		x.style.left = evt.pageX - Math.round(x.offsetWidth / 2);
 			}
 		
 			var cv = this.domElement;
@@ -222,16 +222,7 @@ class Board {
 			if(!this.board[this.mousex + this.w * this.mousey]) { // || (this.board[this.mousex + this.w * this.mousey].color != this.board.color && !this.team())) {
 				this.mousex = -1;
 				this.mousey = -1;
-				this.domElement.title = "";
-			} else {
-				let z = this.board[this.mousex + this.w * this.mousey];
-				let p = /[/][^/]+[.](jpg|png|gif)/;
-				if(z.src.substr(z.src.search(p)) == z.src1.substr(z.src1.search(p)))
-					this.domElement.title = z.title0;
-				else
-					this.domElement.title = "";
 			}
-
 			
 			this.render();
 		}).bind(this));
@@ -393,11 +384,10 @@ class CardSet extends Board {
 	reset() {
 		this.w = this.h = 8;
 	
-		let xs = ["d","h","s","c"];
-		let ys = [0,1,10,11];
+		let xs = ["c","d","h","s"];
 		this.board = [];
 		
-		xs.forEach((c,j) => {
+		xs.forEach((c) => {
 			for(let i = 1;i <= 13;++i) {
 				let y = document.createElement("img");
 				y.src1 = "img/" + (i <= 9 ? "0" : "") + i + c + ".gif";
@@ -406,7 +396,6 @@ class CardSet extends Board {
 				y.color = c;
 				y.index = i;
 				y.onload = render;
-				y.title0 = "Letter / Buchstabe : " + String.fromCharCode(64 + i + ys[j]);
 				this.board.push(y);
 			}
 		});
@@ -489,7 +478,6 @@ eb.domDiv.style.float = "left";
 <tr>
 <td>
 <ol style="clear:both">
-	<li><h1>Skat Alphabet</h1> Karo = 0 ; Herz = +1 ; Pik = +10 ; Kreuz = +11 ; 2..10 = 2..10 ; Ass = 1 ; Bube = 11 ; Dame = 12 ; König = 13 </li>
 	<li><h1>Würfel Skat Sudoku</h1> : <img src="games/SkatSudoku.png" style="width:10%"> Die Würfel werden zwischen den Karten platziert und einzelne Kartenwerte dürfen negiert werden und die Summe muss den Würfelwert ergeben </li>
 	<li><h1>Mau Mau Aufbau Mahjong</h1> : <img src="games/MauMauAufbauMahjong.png" style="width:10%"> Es werden 4 zufällige Karten zentral abgelegt. Horizontal und vertikal nach den Mau Mau Regeln anlegen </li>
 	<li><h1>Der Skat Schach Computer</h1> Kreuz : äußerster Ring; Pik : zweiter Ring; Herz : dritter Ring ; Karo : Zentrum; Ass, 2, 3, 4 ... : Reihe 1,2,3,4 ; 9==8 und 10==7 und 9==1 und 10==2 ; Zug : von Ring nach Reihe oder von Reihe nach Ring; notfalls nächste Karte</li>

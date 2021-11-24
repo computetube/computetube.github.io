@@ -1,6 +1,10 @@
 
 
+let add = null;
 
+    if(typeof(GPU) !== "undefined") add = new GPU().createKernel(function (buffer,wave,offset,fr,channel,vol) {
+        return buffer[this.thread.x + offset] + 0.5 * vol * wave[Math.trunc(this.thread.x / 2.0 * 4.0 * fr + channel)] / 32000;
+    }).setOutput([44000]);
 
 
 
@@ -116,12 +120,11 @@ class FractalHeightMap {
 
 
 
+let blur = null;
 
 
-
-
-
-   	const blur = new GPU().createKernel(function (xs) {
+	if(typeof(GPU) !== "undefined")
+   	blur = new GPU().createKernel(function (xs) {
    		let sum = 0;
    		let f = 0;
    		let n = 20;
@@ -137,8 +140,8 @@ class Instrument {
         this.add = add;
 		this.r = new GeneralRandom();
         
-        let leftVol = 0.5 * this.r.random() + 0.5;
-        this.chVols = [leftVol,1 - leftVol];
+        let leftVol = this.r.random();
+        this.chVols = [leftVol,1.0 - leftVol];
 
     }
     
@@ -173,7 +176,7 @@ class Instrument {
 			xs.push(add2(a,b,c,d,e,f,g));
 		}
 		
-		let p = 1;// + 0.2 * Math.random();
+		let p = 1.5;// + 0.2 * Math.random();
 		[xs].forEach((x) => {
 		    for(let j = 0;j < x.length;++j) {
 				let _min = 100000;
@@ -185,10 +188,10 @@ class Instrument {
 				for(let i = 0;i < x[j].length;++i) x[j][i] /= Math.max(Math.abs(_max),Math.abs(_min));
 				console.log(x[j]);
 				for(let i = 0;i < x[j].length;++i) for(k = i - 10;k < i + 10;++k) if(k > 0 && k < x[j].length) {sum += Math.pow(Math.abs(x[j][k]) * (1 / (1 + Math.pow(i - k,2))),p);n += 1;}
-				sum = Math.pow(Math.abs(sum),1.0 / p);
 				sum /= n;
+				sum = Math.pow(Math.abs(sum),1.0 / p);
 				console.log("sum " + sum);
-				for(let i = 0;i < x[j].length;++i) x[j][i] = x[j][i] / sum * 500.0;
+				for(let i = 0;i < x[j].length;++i) x[j][i] = x[j][i] / sum * 100.0;
 				console.log(x[j]);
 		    }
 		});

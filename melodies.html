@@ -63,10 +63,6 @@
 	    console.log(scale);
     }
 
-
-    const add = gpu.createKernel(function (buffer,wave,offset,fr,channel,vol) {
-        return buffer[this.thread.x + offset] + 0.75 * vol * wave[Math.trunc(this.thread.x / 2.0 * 4.0 * fr + channel)] / 100000;
-    }).setOutput([44000]);
     
     gpu.addFunction(function mypow(x,y) {
     	return Math.sign(x) * Math.pow(Math.abs(x),y);
@@ -74,9 +70,9 @@
     const add2 = gpu.createKernel(function (a,b,c,d,e,f,g) {
     	let x = 441.0 * Math.PI * this.thread.x / 44100.0 * Math.PI * Math.pow(2.0,-24 / 12.0);    		
 		return  (Math.atan((this.thread.x - 1000) / 100.0) + Math.PI / 2) *  
-				mypow(Math.sin(x),5 * a + 0.1) * 
-				(mypow(Math.cos(this.thread.x / 4000 * (0.8 + 0.5 * c)),5 * b + 0.1) + (3 * e + 1)) * 
-				(Math.atan(-0.001 * (3 * f + 1) * (x - 40 - 50 * g)) + Math.PI / 2);
+				mypow(Math.sin(x),a > 0.5 ? 10.0 * (a - 0.5) : 1.0 / (10.0 * a)) * 
+				(mypow(Math.cos(this.thread.x / 4000 * (1.0 + 1.0 * (1.0 / (10 * c + 1)))),b > 0.5 ? 10.0 * (b - 0.5) : 1.0 / (10.0 * b)) + (10 * e + 1)) * 
+				(Math.atan(-0.001 * (4 / (10 * f + 1)) * (x - 40 - 50 * g)) + Math.PI / 2);
         //return buffer[this.thread.x + offset] + vol * Math.atan(1.5 * y)  / 5;
     }).setOutput([200000]);
 
@@ -114,7 +110,7 @@
 
         play(buffer,offset,sampleRate,len) {
             if(this.r.random() < 0.75) {
-                this.instrument.render(buffer,offset,scale[this.tones[this.index]],sampleRate,1.25,len);
+                this.instrument.render(buffer,offset,scale[this.tones[this.index]],sampleRate,1.75,len);
                 if(this.r.random() < 0.75) {
                     this.index += 1;
                     
@@ -138,7 +134,7 @@
         var instruments0 = shuffle(instrumentsF(add2));   
         
         let ms = [];
-        for(let i = 0;i < 3;++i) {
+        for(let i = 0;i < 4;++i) {
             ms.push(new Melody(new Instrument(instruments0.shift(),add)));
 		}
         

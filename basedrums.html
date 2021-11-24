@@ -16,17 +16,14 @@
 
     var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-    const add = gpu.createKernel(function (buffer,wave,offset,fr,channel,vol) {
-        return buffer[this.thread.x + offset] + 0.75 * vol * wave[Math.trunc(this.thread.x / 2.0 * 4.0 * fr + channel)] / 100000;
-    }).setOutput([22000]);
     gpu.addFunction(function mypow(x,y) {
     	return Math.pow(Math.abs(x),y) * (x < 0 ? -1 : 1);
     });
     const add2 = gpu.createKernel(function (a,b,c,d,e,f,g) {
     	let x = 441.0 * Math.PI * this.thread.x / 44100.0 * 2 * Math.PI * Math.pow(2.0,Math.trunc(-70)  / 12.0);    		
 		return Math.atan(
-				mypow(Math.sin(x),1.5 * a + 0.5) * 
-				(mypow(Math.cos(this.thread.x / (55 + 10 * d)),1.5 * b + 0.5) + (3 * c + 1))
+				mypow(Math.sin(x),a > 0.5 ? 10.0 * (a - 0.5) : 1.0 / (10.0 * a)) * 
+				(mypow(Math.cos(this.thread.x / (55 + 10 * d)),b > 0.5 ? 10.0 * (b - 0.5) : 1.0 / (10.0 * b)) + (3 * c + 1))
 			) * 
 			(Math.atan(-0.1 * (x - (5 + 20 * e))) + Math.PI / 2);
         //return buffer[this.thread.x + offset] + vol * Math.atan(1.5 * y)  / 5;
@@ -76,7 +73,7 @@
         var drums0 = shuffle(instrumentsF(add2));
         
         let ds = [];
-        let takt = 4 + 4 * rand(2);
+        let takt = 4 + 4 * rand(1);
         let xs = [0];
          ds.push(new Drum0(new Instrument(drums0.shift(),add),takt,0));
        

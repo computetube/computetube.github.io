@@ -67,8 +67,17 @@
     gpu.addFunction(function mypow(x,y) {
     	return Math.sign(x) * Math.pow(Math.abs(x),y);
     });
-    const add2 = gpu.createKernel(function (a,b,c,d,e,f,g) {
-    	let x = 441.0 * Math.PI * this.thread.x / 44100.0 * Math.PI * Math.pow(2.0,-24 / 12.0);    		
+    const add2 = gpu.createKernel(function (xs) {
+        let p = xs[7] > 0.5 ? 3.0 * (xs[7] - 0.5) : 1.0 / (3.0 * xs[7]);    
+    	let a = Math.pow(xs[0],p);
+    	let b = Math.pow(xs[1],p);
+    	let c = Math.pow(xs[2],p);
+    	let d = Math.pow(xs[3],p);
+    	let e = Math.pow(xs[4],p);
+    	let f = Math.pow(xs[5],p);
+    	let g = Math.pow(xs[6],p);
+    	    	
+    	let x = 441.0 * Math.PI * this.thread.x / 44100.0 * Math.PI * Math.pow(2.0,-24 / 12.0);    
 		return  (Math.atan((this.thread.x - 1000) / 100.0) + Math.PI / 2) *  
 				mypow(Math.sin(x),a > 0.5 ? 10.0 * (a - 0.5) : 1.0 / (10.0 * a)) * 
 				(mypow(Math.cos(this.thread.x / 4000 * (1.0 + 1.0 * (1.0 / (10 * c + 1)))),b > 0.5 ? 10.0 * (b - 0.5) : 1.0 / (10.0 * b)) + (10 * e + 1)) * 

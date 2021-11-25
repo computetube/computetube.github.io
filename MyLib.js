@@ -3,7 +3,7 @@
 let add = null;
 
     if(typeof(GPU) !== "undefined") add = new GPU().createKernel(function (buffer,wave,offset,fr,channel,vol) {
-        return buffer[this.thread.x + offset] + 0.5 * vol * wave[Math.trunc(this.thread.x / 2.0 * 4.0 * fr + channel)] / 32000;
+        return buffer[this.thread.x + offset] + 0.75 * vol * wave[Math.trunc(this.thread.x / 2.0 * 4.0 * fr + channel)] / 32000;
     }).setOutput([44000]);
 
 
@@ -165,15 +165,9 @@ class Instrument {
 		
 		for(let i = 0;i < 10;++i) {
 			let r = new GeneralRandom();
-			
-        	 let a = r.random();
-       	  	 let b = r.random();
-      	 	  let c = r.random();
-	         let d = r.random();
-	         let e = r.random();
-	         let f = r.random();
-	         let g = r.random();
-			xs.push(add2(a,b,c,d,e,f,g));
+			let ys = [];
+			for(let j = 0;j < 20;++j) ys.push(r.random());
+ 			xs.push(add2(ys));
 		}
 		
 		let p = 1.5;// + 0.2 * Math.random();

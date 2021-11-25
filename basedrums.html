@@ -50,7 +50,7 @@
         
         play(buffer,offset,tone,sampleRate) {
             if(this.index % this.q == this.d) {
-                this.instrument.render(buffer,offset,this.tone,sampleRate,7.5,100);
+                this.instrument.render(buffer,offset,this.tone,sampleRate,5.5,100);
             }
             this.index += 1;
         }

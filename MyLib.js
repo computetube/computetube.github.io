@@ -170,7 +170,7 @@ class Instrument {
  			xs.push(add2(ys));
 		}
 		
-		let p = 1.5;// + 0.2 * Math.random();
+		let p = 3;// + 0.2 * Math.random();
 		[xs].forEach((x) => {
 		    for(let j = 0;j < x.length;++j) {
 				let _min = 100000;
@@ -185,7 +185,7 @@ class Instrument {
 				sum /= n;
 				sum = Math.pow(Math.abs(sum),1.0 / p);
 				console.log("sum " + sum);
-				for(let i = 0;i < x[j].length;++i) x[j][i] = x[j][i] / sum * 100.0;
+				for(let i = 0;i < x[j].length;++i) x[j][i] = x[j][i] / sum * 200.0;
 				console.log(x[j]);
 		    }
 		});

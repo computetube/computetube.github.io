@@ -170,7 +170,7 @@ class Instrument {
  			xs.push(add2(ys));
 		}
 		
-		let p = 3;// + 0.2 * Math.random();
+		let p = 1;// + 0.2 * Math.random();
 		[xs].forEach((x) => {
 		    for(let j = 0;j < x.length;++j) {
 				let _min = 100000;

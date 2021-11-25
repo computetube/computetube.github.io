@@ -114,6 +114,8 @@
 		    //max = scale.length - 1;
 		    for(let i = 0;i < this.tones.length;++i) this.tones[i] = Math.round((max - min) * (this.tones[i] - _min) / (_max - _min) + min);
 		    console.log(min + " / " + max);
+		    this.a = Math.random() * 0.5 + 0.5;
+		    this.b = Math.random() * 0.5 + 0.5;
         }
         
         fractal(start,end,decay,amp) {
@@ -126,9 +128,9 @@
 	    }
 
         play(buffer,offset,sampleRate,len) {
-            if(this.r.random() < 0.75) {
+            if(this.r.random() < this.a) {
                 this.instrument.render(buffer,offset,scale[this.tones[this.index]],sampleRate,1.75,len);
-                if(this.r.random() < 0.75) {
+                if(this.r.random() < this.b) {
                     this.index += 1;
                     
                     if(this.index >= this.tones.length) {

@@ -33,8 +33,9 @@
 		return Math.atan(
 				mypow(Math.sin(x),a > 0.5 ? 10.0 * (a - 0.5) : 1.0 / (10.0 * a)) * 
 				(mypow(Math.cos(this.thread.x / (55 + 10 * d)),b > 0.5 ? 10.0 * (b - 0.5) : 1.0 / (10.0 * b)) + (3 * c + 1))
-			) * 
-			(Math.atan(-0.1 * (x - (5 + 20 * e))) + Math.PI / 2);
+			   * 
+			    (Math.atan(-0.1 * (x - (5 + 20 * e))) + Math.PI / 2)
+			    );
         //return buffer[this.thread.x + offset] + vol * Math.atan(1.5 * y)  / 5;
     }).setOutput([200000]);
 

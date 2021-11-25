@@ -147,7 +147,7 @@ class Instrument {
     
     render(buffer,offset,tone,sampleRate,vol,len) {
 		const fr = Math.pow(2.0,tone / 12.0) * sampleRate / 44100.0;	
-        const n = Math.round(this.r.random() * 200);
+        const n = Math.round(this.r.random() * 100);
         const channels = 2;
        
         for(var channel = 0; channel < channels; channel++) {

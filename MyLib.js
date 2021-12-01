@@ -1,5 +1,42 @@
 
 
+
+function minmaxKernelFunction(xs,cfg) {
+		let minx = 10000;
+		let maxx = -1;
+		let miny = 10000;
+		let maxy = -1;
+		
+		for(let y = 0;y < cfg[1];++y) {
+			for(let x = 0;x < cfg[0];++x) {
+				if(xs[y][x] == 0) 
+					{
+					     if(x < minx) minx = x;
+						 if(x > maxx) maxx = x;
+						 if(y < miny) miny = y;
+						 if(y > maxy) maxy = y;
+					}
+			}
+		}
+		switch(this.thread.x) {
+		    case 0: return minx;
+			case 1: return maxx;
+			case 2: return miny;
+			case 3: return maxy;
+		}
+   }
+   
+   
+function statKernelFunction(xs,cfg) {
+        let sum = 0;
+		for(let y = 0;y < cfg[1];++y) {
+			for(let x = 0;x < cfg[0];++x) {
+			    if(xs[y][x] == this.thread.x) sum += 1;
+			}
+		}
+		return sum;
+    }
+
 let add = null;
 
     if(typeof(GPU) !== "undefined") add = new GPU().createKernel(function (buffer,wave,offset,fr,channel,vol) {
@@ -196,12 +233,12 @@ class Instrument {
 	}
 
 
-function fractal(cfg) {
+function fractal(cfg,depth) {
 	let mathx = (cfg[3] - cfg[2]) * this.thread.x / cfg[0] + cfg[2];
-	let mathy = cfg[5] - (cfg[5] - cfg[4]) * this.thread.y / cfg[1];
+	let mathy = (cfg[5] - cfg[4]) * this.thread.y / cfg[1] + cfg[4];
 	let xr = 0;
 	let xi = 0;
-	for(let k = 0;k < 100;++k) {
+	for(let k = 1;k < depth;++k) {
 		let zr = 1;
 		let zi = 0;
 		
@@ -246,6 +283,7 @@ function fractal(cfg) {
 		}
 	}
 	this.color(0,0,0,0);
+	return 0;
 }
 
 
